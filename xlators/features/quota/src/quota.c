@@ -5261,13 +5261,20 @@ struct xlator_dumpops dumpops = {
         .priv    = quota_priv_dump,
 };
 struct volume_options options[] = {
-        {.key = {"limit-set"}},
+        {.key = {"limit-set"},
+	 .op_version = {1},
+	 .flags = OPT_FLAG_SETTABLE,
+	 .tags = {}
+	},
         {.key = {"deem-statfs"},
          .type = GF_OPTION_TYPE_BOOL,
          .default_value = "on",
          .description = "If set to on, it takes quota limits into"
                         " consideration while estimating fs size. (df command)"
-                        " (Default is on)."
+                        " (Default is on).",
+	 .op_version = {2},
+	 .flags = OPT_FLAG_SETTABLE,
+	 .tags = {},
         },
         {.key = {"server-quota"},
          .type = GF_OPTION_TYPE_BOOL,
@@ -5278,6 +5285,9 @@ struct volume_options options[] = {
         {.key = {"default-soft-limit"},
          .type = GF_OPTION_TYPE_PERCENT,
          .default_value = "80%",
+	 .op_version = {3},
+	 .flags = OPT_FLAG_SETTABLE,
+	 .tags = {},
         },
         {.key = {"soft-timeout"},
          .type = GF_OPTION_TYPE_TIME,
@@ -5286,7 +5296,10 @@ struct volume_options options[] = {
          .default_value = "60",
          .description = "quota caches the directory sizes on client. "
                         "soft-timeout indicates the timeout for the validity of"
-                        " cache before soft-limit has been crossed."
+                        " cache before soft-limit has been crossed.",
+	 .op_version = {3},
+	 .flags = OPT_FLAG_SETTABLE,
+	 .tags = {},
         },
         {.key = {"hard-timeout"},
          .type = GF_OPTION_TYPE_TIME,
@@ -5295,7 +5308,10 @@ struct volume_options options[] = {
          .default_value = "5",
          .description = "quota caches the directory sizes on client. "
                         "hard-timeout indicates the timeout for the validity of"
-                        " cache after soft-limit has been crossed."
+                        " cache after soft-limit has been crossed.",
+	 .op_version = {3},
+	 .flags = OPT_FLAG_SETTABLE,
+	 .tags = {},
         },
         { .key   = {"username"},
           .type  = GF_OPTION_TYPE_ANY,
@@ -5323,6 +5339,9 @@ struct volume_options options[] = {
           .min = 0,
           .max = 7*86400,
           .default_value = "86400",
+	  .op_version = {3},
+	  .flags = OPT_FLAG_SETTABLE,
+	  .tags = {},
         },
         {.key = {NULL}}
 };
