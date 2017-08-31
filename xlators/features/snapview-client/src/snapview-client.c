@@ -2524,6 +2524,11 @@ struct volume_options options[] = {
         { .key = {"snapshot-directory"},
           .type = GF_OPTION_TYPE_STR,
           .default_value = ".snaps",
+          .op_version = {GD_OP_VERSION_3_6_0},
+          .flags = OPT_FLAG_CLIENT_OPT | OPT_FLAG_SETTABLE,
+          .description = "Entry point directory for entering snapshot world. "
+                         "Values can have only [0-9a-z-_] and starts with "
+                         "dot (.) and cannot exceed 255 character"
         },
         { .key = {"snapdir-entry-path"},
           .type = GF_OPTION_TYPE_STR,
@@ -2534,6 +2539,8 @@ struct volume_options options[] = {
         },
         { .key = {"show-snapshot-directory"},
           .type = GF_OPTION_TYPE_BOOL,
+          .op_version = {GD_OP_VERSION_3_6_0},
+          .flags = OPT_FLAG_CLIENT_OPT | OPT_FLAG_SETTABLE,
           .description = "If this option is set, and the option "
                          "\"snapdir-entry-path\" is set (which is set by samba "
                          "vfs plugin for glusterfs, then send the entry point "
