@@ -71,7 +71,7 @@ rpath for POSIX2 on disk structure would be,
 rpath is further allocated on the stack (alloca), which is why this is a MACRO
 */
 #define MAKE_INODE_HANDLE(rpath, this, loc, iatt_p) do {                \
-        int reqlen, retlen;                                             \
+        int reqlen, ret;                                                \
         struct posix_private *priv = NULL;                              \
         if (gf_uuid_is_null (loc->gfid)) {                              \
                 gf_msg (this->name, GF_LOG_ERROR, 0,                    \
@@ -85,9 +85,9 @@ rpath is further allocated on the stack (alloca), which is why this is a MACRO
         priv = this->private;                                           \
         reqlen = posix2_handle_length (priv->base_path_length);         \
         rpath = alloca (reqlen);                                        \
-        retlen = posix2_make_handle (loc->gfid, priv->base_path,        \
-                                     rpath, reqlen);                    \
-        if (retlen <= reqlen) {                                         \
+        ret = posix2_make_handle (loc->gfid, priv->base_path,           \
+                                  rpath, reqlen);                       \
+        if (ret == 0) {                                                 \
                 op_ret = posix2_istat_path (this, loc->gfid, rpath,     \
                                             iatt_p, _gf_false);         \
         } else {                                                        \

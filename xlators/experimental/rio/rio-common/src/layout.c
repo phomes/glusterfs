@@ -17,6 +17,8 @@
  *  - Test program to test this in isolation
  */
 
+#include "compat-uuid.h"
+
 #include "layout.h"
 
 struct layout_definitions {
@@ -57,13 +59,41 @@ out:
         return new_layout;
 }
 
-/*
-xlator_t *
-layout_search (struct layout *searchin)
+uint32_t
+gfid_to_bucket (uuid_t gfid)
 {
+        uint32_t  bucket = 0;
 
+        bucket += (uint32_t)(gfid[0]) << 8;
+        bucket += (uint32_t)(gfid[1]);
+
+        return bucket;
 }
 
+/* TODO: The function does not belong here, should be called using handlers in
+searchin */
+xlator_t *
+layout_search (struct layout *searchin, uuid_t gfid)
+{
+        return searchin->layou_buckets[gfid_to_bucket (gfid)];
+}
+
+/* TODO: Not sure if this is where this abstraction fits in */
+void
+layout_generate_colocated_gfid (struct layout *searchin, uuid_t out_gfid,
+                                uuid_t in_gfid)
+{
+        int32_t bucket;
+
+        bucket = gfid_to_bucket (in_gfid);
+        gf_uuid_generate (out_gfid);
+
+        /* TODO: are we endian safe here? */
+        out_gfid[0] = ((bucket >> 8) & 0xFF);
+        out_gfid[1] = ((bucket) & 0xFF);
+}
+
+/*
 int
 layout_update (struct layout *layout)
 {

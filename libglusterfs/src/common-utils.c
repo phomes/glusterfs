@@ -4965,7 +4965,6 @@ get_struct_variable (int mem_num, gf_gsync_status_t *sts_val)
         default:
                  goto out;
         }
-
 out:
         return NULL;
 }
@@ -4982,4 +4981,28 @@ gf_strncpy (char *dest, const char *src, const size_t dest_size)
         strncpy (dest, src, dest_size - 1);
         dest[dest_size - 1] = '\0';
         return dest;
+}
+
+/* AUX GFID explained:
+When using RIO a mkdir is split into 2 FOPS, icreate and namelink. icreate is
+just creating an inode (GFID for the directory), and hence the RPC will
+exchange just the GFID and mode information to create the said inode.
+
+Given just a GFID and no parent, is new in gluster from a FOP perspective,
+as all entry operations have a parent under which these are created. Thus, an
+auxillary GFID is intoduced as a parent when icreate is recieved, enabling
+cleaner pass through the stack and is handled in POSIX lookup and ignored in
+posix icreate operation (i.e it does not need the parent).
+
+Function does a simple check on passed in UUID being equivalent to the
+special AUX PARGFID.*/
+int __is_auxilary_gfid (uuid_t u1)
+{
+        uuid_t u2;
+
+        memset (u2, 0, sizeof (uuid_t));
+
+        u2[15] = GF_AUXILLARY_PARGFID;
+
+        return !gf_uuid_compare (u1, u2);
 }

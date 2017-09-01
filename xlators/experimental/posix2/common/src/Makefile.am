@@ -35,7 +35,7 @@ libposix2common_la_LIBADD = $(top_builddir)/libglusterfs/src/libglusterfs.la \
 
 libposix2common_la_CFLAGS = -Wall -fno-strict-aliasing
 libposix2common_la_CFLAGS += $(GF_CFLAGS) -I$(top_srcdir)/glusterfsd/src
-libposix2common_la_CFLAGS += -DPOSIX2
+libposix2common_la_CFLAGS += -DPOSIX2 -DRIO_DEBUG
 libposix2common_la_CFLAGS += -I$(POSIX_SRC)
 
 libposix2common_la_CPPFLAGS = $(GF_CPPFLAGS)

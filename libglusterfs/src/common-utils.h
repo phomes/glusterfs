@@ -954,4 +954,7 @@ gf_strncpy (char *dest, const char *src, const size_t dest_size);
 void
 gf_strTrim (char **s);
 
+int
+__is_auxilary_gfid (uuid_t);
+
 #endif /* _COMMON_UTILS_H */

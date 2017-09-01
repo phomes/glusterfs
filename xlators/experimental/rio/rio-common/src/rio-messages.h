@@ -40,7 +40,7 @@
  */
 
 #define GLFS_RIO_BASE          GLFS_MSGID_COMP_RIO
-#define GLFS_RIO_NUM_MESSAGES  1
+#define GLFS_RIO_NUM_MESSAGES  3
 #define GLFS_RIO_MSGID_END     (GLFS_RIO_BASE + GLFS_RIO_NUM_MESSAGES + 1)
 
 /* Messages with message IDs */
@@ -54,6 +54,10 @@
  *
  */
 #define RIO_MSG_VOLUME_CONF_ERROR        (GLFS_RIO_BASE + 1)
+
+#define RIO_MSG_MISSING_GFID             (GLFS_RIO_BASE + 2)
+
+#define RIO_MSG_LAYOUT_ERROR        (GLFS_RIO_BASE + 3)
 
 #define glfs_msg_end_x GLFS_RIO_MSGID_END, "Invalid: End of messages"
 

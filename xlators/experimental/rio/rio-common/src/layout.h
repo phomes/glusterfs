@@ -30,6 +30,8 @@ typedef struct layout layout_t;
 
 struct layout *layout_init (char *, int, struct rio_subvol *, dict_t *);
 void layout_destroy (struct layout *);
+xlator_t *layout_search (struct layout *, uuid_t);
+void layout_generate_colocated_gfid (struct layout *, uuid_t, uuid_t);
 
 /* END: needed interface by consumers */
 

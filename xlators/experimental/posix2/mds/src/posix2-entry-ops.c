@@ -25,6 +25,7 @@ posix2_named_lookup (call_frame_t *frame, xlator_t *this, loc_t *loc)
         int32_t      op_errno = 0;
         int          parlen   = 0;
         char        *parpath  = NULL;
+        uuid_t       tgtuuid  = {0,};
         struct iatt  buf      = {0,};
         struct iatt  postbuf  = {0,};
         struct posix_private *priv = NULL;
@@ -34,24 +35,30 @@ posix2_named_lookup (call_frame_t *frame, xlator_t *this, loc_t *loc)
         parlen = posix2_handle_length (priv->base_path_length);
         parpath = alloca (parlen);
 
-        errno = EINVAL;
+        if (loc->parent && !gf_uuid_is_null (loc->parent->gfid))
+                gf_uuid_copy (tgtuuid, loc->parent->gfid);
+        else
+                gf_uuid_copy (tgtuuid, loc->pargfid);
 
         /* make parent handle */
-        parlen = posix2_make_handle (loc->pargfid, priv->base_path, parpath,
-                                     parlen);
-        if (parlen <= 0)
+        ret = posix2_make_handle (tgtuuid, priv->base_path, parpath, parlen);
+        if (ret != 0) {
+                errno = EINVAL;
                 goto unwind_err;
+        }
 
         /* lookup entry */
         ret = posix2_handle_entry (this, parpath, loc->name, &buf);
         if (ret) {
-                if (errno != EREMOTE)
-                        goto unwind_err;
                 op_ret = -1;
                 op_errno = errno;
+                /* continue to get parent postbuf, on EREMOTE errors */
+                if (errno != EREMOTE) {
+                        goto unwind_err;
+                }
         }
 
-        ret = posix2_istat_path (this, loc->pargfid, parpath, &postbuf,
+        ret = posix2_istat_path (this, tgtuuid, parpath, &postbuf,
                                  _gf_true);
         if (ret)
                 goto unwind_err;
@@ -60,7 +67,7 @@ posix2_named_lookup (call_frame_t *frame, xlator_t *this, loc_t *loc)
                              loc->inode, &buf, NULL, &postbuf);
         return 0;
 
- unwind_err:
+unwind_err:
         STACK_UNWIND_STRICT (lookup, frame, -1, errno, NULL, NULL, NULL, NULL);
         return 0;
 }
@@ -94,7 +101,6 @@ posix2_create_inode0x1 (xlator_t *this, char *entry, uuid_t rootgfid,
         return -1;
 }
 
-/* TODO: Enable with aux GFID support added
 static int32_t
 posix2_handle_auxlookup (call_frame_t *frame,
                          xlator_t *this, loc_t *loc, uuid_t auxgfid)
@@ -113,7 +119,7 @@ posix2_handle_auxlookup (call_frame_t *frame,
         STACK_UNWIND_STRICT (lookup, frame,
                              0, 0, loc->inode, &auxbuf, NULL, NULL);
         return 0;
-}*/
+}
 
 static int32_t
 posix2_nameless_lookup (call_frame_t *frame, xlator_t *this, loc_t *loc)
@@ -131,19 +137,17 @@ posix2_nameless_lookup (call_frame_t *frame, xlator_t *this, loc_t *loc)
         entrylen = posix2_handle_length (priv->base_path_length);
         entry = alloca (entrylen);
 
-        if (!gf_uuid_is_null (loc->gfid))
-                gf_uuid_copy (tgtuuid, loc->gfid);
-        else
+        if (loc->inode && !gf_uuid_is_null (loc->inode->gfid))
                 gf_uuid_copy (tgtuuid, loc->inode->gfid);
+        else
+                gf_uuid_copy (tgtuuid, loc->gfid);
 
-        /* TODO: Enable with aux GFID support added
         if (__is_auxilary_gfid (tgtuuid))
-                return posix2_handle_auxlookup (frame, this, loc, tgtuuid); */
+                return posix2_handle_auxlookup (frame, this, loc, tgtuuid);
 
         errno = EINVAL;
-        entrylen = posix2_make_handle (tgtuuid, priv->base_path, entry,
-                                       entrylen);
-        if (entrylen <= 0)
+        ret = posix2_make_handle (tgtuuid, priv->base_path, entry, entrylen);
+        if (ret != 0)
                 goto unwind_err;
 
         ret = posix2_istat_path (this, tgtuuid, entry, &buf, _gf_false);
@@ -179,7 +183,13 @@ posix2_lookup (call_frame_t *frame,
 {
         int32_t ret = 0;
 
-        if (posix2_lookup_is_nameless (loc))
+#ifdef RIO_DEBUG
+        gf_msg (this->name, GF_LOG_INFO, 0, 0,
+                "LOOKUP : parent - %p pargfidpresent - %d name - %s",
+                loc->parent, gf_uuid_is_null(loc->pargfid),
+                (loc->name) ? loc->name : "NULL");
+#endif
+        if (loc_is_nameless (loc))
                 ret = posix2_nameless_lookup (frame, this, loc);
         else
                 ret = posix2_named_lookup (frame, this, loc);
@@ -219,8 +229,8 @@ posix2_open_inode (xlator_t *this,
         entry = alloca (entrylen);
 
         errno = EINVAL;
-        entrylen = posix2_make_handle (gfid, export, entry, entrylen);
-        if (entrylen <= 0)
+        ret = posix2_make_handle (gfid, export, entry, entrylen);
+        if (ret != 0)
                 goto error_return;
 
         ret = posix2_open_and_save (this, fd, entry, flags & ~O_CREAT);
@@ -259,8 +269,8 @@ posix2_create_namei (xlator_t *this, char *parpath,
         entry = alloca (entrylen);
 
         /* create inode */
-        entrylen = posix2_make_handle (gfid, export, entry, entrylen);
-        if (entrylen <= 0) {
+        ret = posix2_make_handle (gfid, export, entry, entrylen);
+        if (ret != 0) {
                 errno = EINVAL;
                 goto error_return;
         }
@@ -351,7 +361,7 @@ posix2_create (call_frame_t *frame,
                mode_t mode, mode_t umask, fd_t *fd, dict_t *xdata)
 {
         int32_t ret = 0;
-        int parlen = 0, retlen;
+        int parlen = 0;
         char *parpath = NULL;
         struct iatt buf = {0,};
         struct iatt prebuf = {0,};
@@ -365,9 +375,9 @@ posix2_create (call_frame_t *frame,
 
         errno = EINVAL;
         /* parent handle */
-        retlen = posix2_make_handle (loc->pargfid, priv->base_path, parpath,
-                                     parlen);
-        if (parlen != retlen) {
+        ret = posix2_make_handle (loc->pargfid, priv->base_path, parpath,
+                                  parlen);
+        if (ret != 0) {
                 errno = EINVAL;
                 goto unwind_err;
         }
@@ -424,9 +434,9 @@ zfstore_namelink (call_frame_t *frame,
         parpath = alloca (parlen);
 
         /* parent handle */
-        parlen = posix2_make_handle (loc->pargfid, priv->base_path,
-                                     parpath, parlen);
-        if (parlen <= 0)
+        ret = posix2_make_handle (loc->pargfid, priv->base_path,
+                                  parpath, parlen);
+        if (ret != 0)
                 goto unwind_err;
 
         /* parent prebuf */
@@ -480,8 +490,8 @@ posix2_icreate (call_frame_t *frame,
         entrylen = posix2_handle_length (priv->base_path_length);
         entry = alloca (entrylen);
 
-        entrylen = posix2_make_handle (gfid, priv->base_path, entry, entrylen);
-        if (entrylen <= 0)
+        ret = posix2_make_handle (gfid, priv->base_path, entry, entrylen);
+        if (ret != 0)
                 goto unwind_err;
 
         ret = posix2_create_inode (this, entry, 0, mode);

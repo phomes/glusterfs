@@ -43,8 +43,23 @@ int
 posix2_make_handle (uuid_t gfid, char *basepath, char *handle,
                     size_t handlesize)
 {
-        return snprintf (handle, handlesize, POSIX2_ENTRY_HANDLE_FMT,
-                         basepath, gfid[0], gfid[1], uuid_utoa (gfid));
+        int retlen;
+
+        /* Welcome to snprintf: see man 3 snprintf
+        "a return value of size or more means that the
+       output was truncated."
+       " The glibc implementation of the functions snprintf() and vsnprintf()
+       conforms to the C99 standard, that is, behaves as described above,
+       since glibc version 2.1.  Until glibc 2.0.6, they would return
+       -1 when the output was truncated." */
+        retlen = snprintf (handle, handlesize, POSIX2_ENTRY_HANDLE_FMT,
+                           basepath, gfid[0], gfid[1], uuid_utoa (gfid));
+        if (retlen >= handlesize) {
+                errno = EOVERFLOW;
+                return -1;
+        } else {
+                return 0;
+        }
 }
 
 int
@@ -106,7 +121,7 @@ int32_t
 posix2_resolve_inode (xlator_t *this, uuid_t tgtuuid, struct iatt *stbuf,
                       gf_boolean_t dircheck)
 {
-        int entrylen = 0, retlen;
+        int entrylen = 0, ret;
         char *entry = NULL;
         struct posix_private *priv = NULL;
 
@@ -115,9 +130,9 @@ posix2_resolve_inode (xlator_t *this, uuid_t tgtuuid, struct iatt *stbuf,
         entrylen = posix2_handle_length (priv->base_path_length);
         entry = alloca (entrylen);
 
-        retlen = posix2_make_handle (tgtuuid, priv->base_path, entry,
-                                     entrylen);
-        if (entrylen != retlen)
+        ret = posix2_make_handle (tgtuuid, priv->base_path, entry,
+                                  entrylen);
+        if (ret != 0)
                 goto error_return;
 
         return posix2_istat_path (this, tgtuuid, entry, stbuf, dircheck);
@@ -144,7 +159,6 @@ posix2_resolve_entry (xlator_t *this, char *parpath, const char *basename,
         gf_uuid_copy (gfid, egfid);
         return 0;
 error_return:
-        errno = EINVAL;
         return -1;
 }
 
@@ -257,7 +271,7 @@ posix2_link_inode (xlator_t *this, char *parpath, const char *basename,
         if (fd < 0)
                 goto error_return;
 
-        ret = sys_fsetxattr (fd, GFID_XATTR_KEY, gfid, sizeof (*gfid), 0);
+        ret = sys_fsetxattr (fd, GFID_XATTR_KEY, gfid, sizeof (uuid_t), 0);
 
         sys_close (fd);
 
