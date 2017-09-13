@@ -84,6 +84,8 @@ struct xlator_fops fops = {
 /*        .compound       = posix2_common_compound, */
 /*        .getactivelk    = posix2_common_getactivelk,*/
 /*        .setactivelk    = posix2_common_setactivelk,*/
+        .icreate        = posix2_icreate,
+        .namelink       = posix2_namelink
 };
 
 struct xlator_cbks cbks = {

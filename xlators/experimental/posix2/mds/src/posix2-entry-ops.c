@@ -409,9 +409,10 @@ posix2_create (call_frame_t *frame,
         return 0;
 }
 
+/* TODO: Not handled in io-threads */
 int32_t
-zfstore_namelink (call_frame_t *frame,
-                  xlator_t *this, loc_t *loc, dict_t *xdata)
+posix2_namelink (call_frame_t *frame, xlator_t *this, loc_t *loc,
+                 dict_t *xdata)
 {
         int32_t         ret     = 0;
         uuid_t          gfid    = {0,};
@@ -455,18 +456,15 @@ zfstore_namelink (call_frame_t *frame,
         if (ret)
                 goto unwind_err;
 
-        /* TODO: uncomment when namelink is added as a FOP
         STACK_UNWIND_STRICT (namelink, frame, 0, 0, &prebuf, &postbuf, NULL);
-        */
         return 0;
 
  unwind_err:
-        /* TODO: uncomment when namelink is added as a FOP
         STACK_UNWIND_STRICT (namelink, frame, -1, errno, NULL, NULL, NULL);
-        */
         return 0;
 }
 
+/* TODO: Not handled in io-threads */
 int32_t
 posix2_icreate (call_frame_t *frame,
                 xlator_t *this, loc_t *loc, mode_t mode, dict_t *xdata)
@@ -502,15 +500,11 @@ posix2_icreate (call_frame_t *frame,
         if (ret)
                 goto purge_entry;
 
-        /* TODO: uncomment when icreate is added as a FOP
         STACK_UNWIND_STRICT (icreate, frame, 0, 0, loc->inode, &stbuf, NULL);
-        */
         return 0;
 
  purge_entry:
  unwind_err:
-        /* TODO: uncomment when icreate is added as a FOP
         STACK_UNWIND_STRICT (icreate, frame, -1, errno, NULL, NULL, NULL);
-        */
         return 0;
 }

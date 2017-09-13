@@ -19,4 +19,10 @@ int32_t
 posix2_create (call_frame_t *, xlator_t *, loc_t *, int32_t,
                mode_t, mode_t, fd_t *, dict_t *);
 
+int32_t
+posix2_namelink (call_frame_t *, xlator_t *, loc_t *, dict_t *);
+
+int32_t
+posix2_icreate (call_frame_t *, xlator_t *, loc_t *, mode_t , dict_t *);
+
 #endif /* _POSIX2_ENTRY_OPS_H */

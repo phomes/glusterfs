@@ -241,7 +241,7 @@ fd_ops = ['readv', 'writev', 'flush', 'fsync', 'fsyncdir', 'ftruncate',
           'fremovexattr', 'fallocate', 'discard', 'zerofill', 'seek']
 
 # These are the current actual lists used to generate the code
-unsupported_ops = ['mknod', 'mkdir', 'unlink', 'rmdir', 'symlink', 'rename',
+unsupported_ops = ['mknod', 'unlink', 'rmdir', 'symlink', 'rename',
                    'link',
                    'statfs', 'ipc', 'compound', 'icreate', 'namelink',
                    'readlink', 'truncate', 'opendir', 'inodelk', 'entrylk',
@@ -255,7 +255,7 @@ mdsonly_inode_ops = ['stat', 'open', 'setxattr', 'getxattr', 'removexattr',
                      'access', 'setattr']
 mdsonly_fd_ops = ['flush', 'fstat', 'fsetxattr', 'fgetxattr', 'fsetattr',
                   'fremovexattr']
-mdsonly_entry_ops = ['create']
+mdsonly_entry_ops = ['mkdir', 'create']
 dsonly_inode_ops = ['not-yet']
 dsonly_fd_ops = ['not-yet']
 

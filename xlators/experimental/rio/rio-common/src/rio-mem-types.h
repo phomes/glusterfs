@@ -20,6 +20,7 @@ enum gf_rio_mem_types_ {
         gf_rio_mt_layout,
         gf_rio_mt_layout_static_bucket,
         gf_rio_mt_layout_inodehash_bucket,
+        gf_rio_mt_local,
         gf_rio_mt_end
 };
 

@@ -72,7 +72,8 @@ class_methods_t class_methods = {
 
 struct xlator_fops fops = {
         .lookup         = rio_server_lookup,
-        .create         = rio_server_create
+        .create         = rio_server_create,
+        .mkdir          = rio_server_mkdir
 };
 
 struct xlator_cbks cbks = {

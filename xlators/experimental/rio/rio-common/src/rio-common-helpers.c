@@ -207,3 +207,189 @@ rio_lookup_is_nameless (loc_t *loc)
         exist in loc */
         return (gf_uuid_is_null (loc->pargfid) || !loc->name);
 }
+
+struct rio_local *
+rio_local_init (call_frame_t *frame, struct rio_conf *conf, loc_t *loc,
+                fd_t *fd, dict_t *xdata, glusterfs_fop_t fop)
+{
+        struct rio_local *local;
+        int ret;
+
+        /* TODO: consider a mem pool for this, mem_pool_new */
+        local = GF_CALLOC (1, sizeof (struct rio_local), gf_rio_mt_local);
+        if (!local)
+                goto error;
+
+        if (loc) {
+                ret = loc_copy (&local->riolocal_loc, loc);
+                if (ret)
+                        goto cleanup;
+        }
+
+        if (fd)
+                local->riolocal_fd = fd_ref (fd);
+
+        if (xdata)
+                local->riolocal_xdata_in = dict_ref (xdata);
+
+        local->riolocal_fop = fop;
+
+        frame->local = local;
+
+        return local;
+cleanup:
+        GF_FREE (local);
+error:
+        return NULL;
+}
+
+void
+rio_local_wipe (struct rio_local *local)
+{
+        if (!local)
+                return;
+
+        loc_wipe (&local->riolocal_loc);
+
+        if (local->riolocal_fd)
+                fd_unref (local->riolocal_fd);
+
+        if (local->riolocal_xdata_in)
+                dict_unref (local->riolocal_xdata_in);
+
+        if (local->riolocal_inode)
+                inode_unref (local->riolocal_inode);
+
+        if (local->riolocal_xdata_out)
+                dict_unref (local->riolocal_xdata_out);
+
+        GF_FREE (local);
+}
+
+int32_t
+rio_prepare_inode_loc (loc_t *dst, loc_t *src, uuid_t gfid)
+{
+        /* Set the gfid we want to work with */
+        gf_uuid_copy (dst->gfid, gfid);
+
+        /* retain the inode, it all belongs togeather */
+        if (src->inode)
+                dst->inode = inode_ref (src->inode);
+
+        /* Set the parent to the ausx GFID */
+        memset (dst->pargfid, 0, sizeof (uuid_t));
+        dst->pargfid[15] = GF_AUXILLARY_PARGFID;
+
+        return 0;
+}
+
+#define set_if_greater(a, b) do {               \
+                if ((a) < (b))                  \
+                        (a) = (b);              \
+        } while (0)
+
+
+#define set_if_greater_time(a, an, b, bn) do {                          \
+                if (((a) < (b)) || (((a) == (b)) && ((an) < (bn)))) {   \
+                        (a) = (b);                                      \
+                        (an) = (bn);                                    \
+                }                                                       \
+        } while (0)                                                     \
+
+int
+rio_iatt_merge (struct iatt *to, struct iatt *from)
+{
+        if (!from || !to)
+                return 0;
+
+        to->ia_dev      = from->ia_dev;
+
+        gf_uuid_copy (to->ia_gfid, from->ia_gfid);
+
+        to->ia_ino      = from->ia_ino;
+        to->ia_prot     = from->ia_prot;
+        to->ia_type     = from->ia_type;
+        to->ia_nlink    = from->ia_nlink;
+        to->ia_rdev     = from->ia_rdev;
+        to->ia_size    += from->ia_size;
+        to->ia_blksize  = from->ia_blksize;
+        to->ia_blocks  += from->ia_blocks;
+
+        set_if_greater (to->ia_uid, from->ia_uid);
+        set_if_greater (to->ia_gid, from->ia_gid);
+
+        set_if_greater_time(to->ia_atime, to->ia_atime_nsec,
+                            from->ia_atime, from->ia_atime_nsec);
+        set_if_greater_time (to->ia_mtime, to->ia_mtime_nsec,
+                             from->ia_mtime, from->ia_mtime_nsec);
+        set_if_greater_time (to->ia_ctime, to->ia_ctime_nsec,
+                             from->ia_ctime, from->ia_ctime_nsec);
+
+        return 0;
+}
+
+int
+rio_iatt_copy (struct iatt *to, struct iatt *from)
+{
+        if (!from || !to)
+                return 0;
+
+        to->ia_dev      = from->ia_dev;
+
+        gf_uuid_copy (to->ia_gfid, from->ia_gfid);
+
+        to->ia_ino        = from->ia_ino;
+        to->ia_prot       = from->ia_prot;
+        to->ia_type       = from->ia_type;
+        to->ia_nlink      = from->ia_nlink;
+        to->ia_rdev       = from->ia_rdev;
+        to->ia_size       = from->ia_size;
+        to->ia_blksize    = from->ia_blksize;
+        to->ia_blocks     = from->ia_blocks;
+
+        to->ia_uid        = from->ia_uid;
+        to->ia_gid        = from->ia_gid;
+        to->ia_atime      = from->ia_atime;
+        to->ia_atime_nsec = from->ia_atime_nsec;
+        to->ia_mtime      = from->ia_mtime;
+        to->ia_mtime_nsec = from->ia_mtime_nsec;
+        to->ia_ctime      = from->ia_ctime;
+        to->ia_ctime_nsec = from->ia_ctime_nsec;
+
+        return 0;
+}
+
+int
+rio_iatt_copy_mds (struct iatt *to, struct iatt *from)
+{
+        if (!from || !to)
+                return 0;
+
+        to->ia_dev      = from->ia_dev;
+
+        gf_uuid_copy (to->ia_gfid, from->ia_gfid);
+
+        to->ia_ino        = from->ia_ino;
+        to->ia_prot       = from->ia_prot;
+        to->ia_type       = from->ia_type;
+        to->ia_nlink      = from->ia_nlink;
+        to->ia_rdev       = from->ia_rdev;
+        to->ia_blksize    = from->ia_blksize;
+        /*
+         * to->ia_size       = from->ia_size;
+         * to->ia_blocks     = from->ia_blocks;
+         */
+
+        to->ia_uid        = from->ia_uid;
+        to->ia_gid        = from->ia_gid;
+        /*
+         to->ia_atime      = from->ia_atime;
+         to->ia_atime_nsec = from->ia_atime_nsec;
+         to->ia_mtime      = from->ia_mtime;
+         to->ia_mtime_nsec = from->ia_mtime_nsec;
+         */
+        to->ia_ctime      = from->ia_ctime;
+        to->ia_ctime_nsec = from->ia_ctime_nsec;
+
+        return 0;
+}

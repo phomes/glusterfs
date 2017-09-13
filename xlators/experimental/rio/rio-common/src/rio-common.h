@@ -61,6 +61,17 @@ struct rio_conf {
         int riocnf_notify_count;
 };
 
+struct rio_local {
+        glusterfs_fop_t      riolocal_fop; /* which FOP started the local */
+        loc_t                riolocal_loc;
+        dict_t              *riolocal_xdata_in; /* in xdata, for future winds */
+        fd_t                *riolocal_fd; /* in fd, for future winds */
+
+        inode_t             *riolocal_inode; /* out inode */
+        struct iatt          riolocal_stbuf; /* stat buf of the inode */
+        dict_t              *riolocal_xdata_out; /* for future unwinds */
+};
+
 int32_t rio_common_init (xlator_t *);
 void rio_common_fini (xlator_t *);
 
