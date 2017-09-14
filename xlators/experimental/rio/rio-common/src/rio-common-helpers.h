@@ -25,7 +25,8 @@ int32_t rio_lookup_is_nameless (loc_t *);
 struct rio_local *rio_local_init (call_frame_t *, struct rio_conf *, loc_t *,
                                   fd_t *, dict_t *, glusterfs_fop_t);
 void rio_local_wipe (struct rio_local *);
-int32_t rio_prepare_inode_loc (loc_t *dst, loc_t *src, uuid_t);
+void rio_prepare_inode_loc (loc_t *dst, inode_t *src, uuid_t,
+                            gf_boolean_t auxparent);
 int rio_iatt_copy (struct iatt *to, struct iatt *from);
 
 #endif /* _RIO_COMMON_HELPERS_H */

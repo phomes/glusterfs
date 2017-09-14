@@ -1831,7 +1831,7 @@ client_post_lookup (xlator_t *this, gfs3_lookup_rsp *rsp, struct iatt *stbuf,
 {
         int     ret     = 0;
 
-        if (-1 != rsp->op_ret) {
+        if (-1 != rsp->op_ret || EREMOTE == rsp->op_errno) {
                 gf_stat_to_iatt (&rsp->postparent, postparent);
                 gf_stat_to_iatt (&rsp->stat, stbuf);
         }

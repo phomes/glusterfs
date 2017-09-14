@@ -354,16 +354,7 @@ rio_server_mkdir (call_frame_t *frame, xlator_t *this,
         }
 
         /* Generate a loc for icreate operation */
-        ret = rio_prepare_inode_loc (&inode_loc, loc, gfid);
-        if (ret) {
-                gf_msg (this->name, GF_LOG_ERROR, errno,
-                        RIO_MSG_LAYOUT_ERROR,
-                        "Missing GFID in request data for creating directory"
-                        " %s, under parent %s", loc->name,
-                        uuid_utoa (loc->parent->gfid));
-                errno = EINVAL;
-                goto error;
-        }
+        rio_prepare_inode_loc (&inode_loc, loc->inode, gfid, _gf_true);
 
         /* Stash the request */
         local = rio_local_init (frame, conf, loc, NULL, xdata, GF_FOP_MKDIR);
@@ -373,6 +364,7 @@ rio_server_mkdir (call_frame_t *frame, xlator_t *this,
                         "Unable to store FOP in args for operation continuty,"
                         "failing directory creation of %s, under parent %s",
                         loc->name, uuid_utoa (loc->parent->gfid));
+                errno = ENOMEM;
                 goto error;
         }
 

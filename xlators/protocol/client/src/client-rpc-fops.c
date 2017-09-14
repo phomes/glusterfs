@@ -2827,7 +2827,7 @@ client3_3_lookup_cbk (struct rpc_req *req, struct iovec *iov, int count,
                 goto out;
         }
 
-        if (rsp.op_ret < 0)
+        if (rsp.op_ret < 0 && rsp.op_errno != EREMOTE)
                 goto out;
 
         if ((!gf_uuid_is_null (inode->gfid))
@@ -2843,14 +2843,16 @@ client3_3_lookup_cbk (struct rpc_req *req, struct iovec *iov, int count,
                 goto out;
         }
 
-        rsp.op_ret = 0;
+        if (rsp.op_errno != EREMOTE)
+                rsp.op_ret = 0;
 
 out:
         /* Restore the correct op_errno to rsp.op_errno */
         rsp.op_errno = op_errno;
         if (rsp.op_ret == -1) {
-                /* any error other than ENOENT */
-                if (!(local->loc.name && rsp.op_errno == ENOENT) &&
+                /* any error other than ENOENT or EREMOTE*/
+                if (!(local->loc.name &&
+                      (rsp.op_errno == ENOENT || rsp.op_errno == EREMOTE)) &&
 		    !(rsp.op_errno == ESTALE))
                         gf_msg (this->name, GF_LOG_WARNING, rsp.op_errno,
                                 PC_MSG_REMOTE_OP_FAILED, "remote operation "

@@ -149,7 +149,8 @@ rio_client_@NAME@ (call_frame_t *frame, xlator_t *this,
 
 #ifdef RIO_DEBUG
         gf_msg (this->name, GF_LOG_INFO, 0, 0,
-                "Sending @UPNAME@ to subvol %s", subvol->name);
+                "Sending @UPNAME@ for gfid %s to subvol %s",
+                uuid_utoa (loc->gfid), subvol->name);
 #endif
 
         STACK_WIND (frame, rio_client_@NAME@_cbk, subvol,

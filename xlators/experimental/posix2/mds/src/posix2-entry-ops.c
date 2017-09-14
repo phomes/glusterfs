@@ -58,6 +58,7 @@ posix2_named_lookup (call_frame_t *frame, xlator_t *this, loc_t *loc)
                 }
         }
 
+        /* parent postbuf */
         ret = posix2_istat_path (this, tgtuuid, parpath, &postbuf,
                                  _gf_true);
         if (ret)
@@ -388,6 +389,8 @@ posix2_create (call_frame_t *frame,
         if (ret)
                 goto unwind_err;
 
+        /* TODO: On EREMOTE errors, we still need to take some metadata from
+        this MDS and send it back to the caller */
         ret = posix2_do_namei (this, parpath, loc, fd, flags, mode,
                                xdata, &buf);
         if (ret)
@@ -492,6 +495,8 @@ posix2_icreate (call_frame_t *frame,
         if (ret != 0)
                 goto unwind_err;
 
+        /* TODO: What if this GFID returns EEXIST, who handles changing the
+        gfid and creating it with a different gfid */
         ret = posix2_create_inode (this, entry, 0, mode);
         if (ret)
                 goto unwind_err;

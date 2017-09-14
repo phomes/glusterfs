@@ -266,21 +266,24 @@ rio_local_wipe (struct rio_local *local)
         GF_FREE (local);
 }
 
-int32_t
-rio_prepare_inode_loc (loc_t *dst, loc_t *src, uuid_t gfid)
+void
+rio_prepare_inode_loc (loc_t *dst, inode_t *inode, uuid_t gfid,
+                       gf_boolean_t auxparent)
 {
         /* Set the gfid we want to work with */
         gf_uuid_copy (dst->gfid, gfid);
 
         /* retain the inode, it all belongs togeather */
-        if (src->inode)
-                dst->inode = inode_ref (src->inode);
+        if (inode)
+                dst->inode = inode_ref (inode);
 
-        /* Set the parent to the ausx GFID */
-        memset (dst->pargfid, 0, sizeof (uuid_t));
-        dst->pargfid[15] = GF_AUXILLARY_PARGFID;
+        if (auxparent) {
+                /* Set the parent to the ausx GFID */
+                memset (dst->pargfid, 0, sizeof (uuid_t));
+                dst->pargfid[15] = GF_AUXILLARY_PARGFID;
+        }
 
-        return 0;
+        return;
 }
 
 #define set_if_greater(a, b) do {               \
