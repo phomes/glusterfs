@@ -59,6 +59,15 @@ out:
         return new_layout;
 }
 
+xlator_t *
+layout_search (struct layout *layout, uuid_t gfid)
+{
+        if (!layout)
+                return NULL;
+
+        return layout->layou_ops->laops_search (layout, gfid);
+}
+
 uint32_t
 gfid_to_bucket (uuid_t gfid)
 {
@@ -68,14 +77,6 @@ gfid_to_bucket (uuid_t gfid)
         bucket += (uint32_t)(gfid[1]);
 
         return bucket;
-}
-
-/* TODO: The function does not belong here, should be called using handlers in
-searchin */
-xlator_t *
-layout_search (struct layout *searchin, uuid_t gfid)
-{
-        return searchin->layou_buckets[gfid_to_bucket (gfid)];
 }
 
 /* TODO: Not sure if this is where this abstraction fits in */

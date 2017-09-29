@@ -9,7 +9,9 @@
 */
 
 /* File: layout-static-bucket.c
- * TODO
+ * Static bucket layout, assumes the bucket is encoded in the passed in search
+ * parameter. When this is a GFID its upper 2 bytes are considered as the
+ * bucket index.
  */
 
 #include "rio-mem-types.h"
@@ -82,7 +84,14 @@ layout_staticbucket_destroy (struct layout *layout)
         return;
 }
 
+xlator_t *
+layout_staticbucket_search (struct layout *layout, uuid_t gfid)
+{
+        return layout->layou_buckets[gfid_to_bucket (gfid)];
+}
+
 struct layout_ops layout_static_bucket = {
         .laops_init = layout_staticbucket_init,
-        .laops_destroy = layout_staticbucket_destroy
+        .laops_destroy = layout_staticbucket_destroy,
+        .laops_search = layout_staticbucket_search
 };

@@ -9,8 +9,13 @@
 */
 
 /* File: layout-inodehash-bucket.c
- * TODO
+ * inode hash bucket layout, hashes the search parameter and uses the top 2
+ * bytes to get a bucket index  .
  */
+
+#include <stdlib.h>
+
+#include "common-utils.h"
 
 #include "rio-mem-types.h"
 #include "rio-common.h"
@@ -83,7 +88,26 @@ layout_inodehash_destroy (struct layout *layout)
         return;
 }
 
+xlator_t *
+layout_inodehash_search (struct layout *layout, uuid_t gfid)
+{
+        uint32_t bucket = 0;
+        char xxh64[GF_XXH64_DIGEST_LENGTH*2+1] = {0,};
+
+        /* TODO: write a wrapper that just returns the 64 bit hash, than the
+        current double conversion */
+        gf_xxh64_wrapper ((unsigned char *)gfid,
+                          sizeof(uuid_t), GF_XXHSUM64_DEFAULT_SEED, xxh64);
+
+        /* take the top 2 bytes, IOW 4 chars from the hash for the bucket */
+        xxh64[4] = '\0';
+        bucket = strtol(xxh64, NULL, 16);
+
+        return layout->layou_buckets[bucket];
+}
+
 struct layout_ops layout_inodehash_bucket = {
         .laops_init = layout_inodehash_init,
-        .laops_destroy = layout_inodehash_destroy
+        .laops_destroy = layout_inodehash_destroy,
+        .laops_search = layout_inodehash_search
 };

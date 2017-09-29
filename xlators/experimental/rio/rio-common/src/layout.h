@@ -45,7 +45,13 @@ struct layout {
 struct layout_ops {
         struct layout *(*laops_init)(char *, int, struct rio_subvol *,
                                      dict_t *);
-        void (*laops_destroy)(struct layout *layout);
+        void (*laops_destroy)(struct layout *);
+        /* TODO: search should not be against uuid_t, should be generic,
+        and specialized within the provider */
+        xlator_t *(*laops_search)(struct layout *, uuid_t);
 };
+
+/* helpers */
+uint32_t gfid_to_bucket (uuid_t);
 
 #endif /* _EVENT_H_ */
