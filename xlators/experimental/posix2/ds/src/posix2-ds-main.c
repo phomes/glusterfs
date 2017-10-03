@@ -11,12 +11,12 @@
 /* File: posix2-ds-main.c
  * This file contains the xlator loading functions, FOP entry points
  * and options.
- * The entire functionality including comments is TODO.
  */
 
 #include "xlator.h"
 
-#include "posix2-common-fops.h"
+#include "posix2-ds-fops.h"
+#include "posix2-unsupported-fops.h"
 #include "posix.h"
 
 class_methods_t class_methods = {
@@ -32,47 +32,47 @@ struct xlator_dumpops dumpops = {
 };
 
 struct xlator_fops fops = {
-        .lookup         = posix2_common_lookup,
-        .stat           = posix2_common_stat,
-        .fstat          = posix2_common_fstat,
-        .truncate       = posix2_common_truncate,
+        .lookup         = posix2_ds_lookup,
+        .stat           = posix2_unsupported_stat,
+        .fstat          = posix2_unsupported_fstat,
+        .truncate       = posix2_unsupported_truncate,
         .ftruncate      = posix_ftruncate,
-        .access         = posix2_common_access,
-        .readlink       = posix2_common_readlink,
-        .mknod          = posix2_common_mknod,
-        .mkdir          = posix2_common_mkdir,
-        .unlink         = posix2_common_unlink,
-        .rmdir          = posix2_common_rmdir,
-        .symlink        = posix2_common_symlink,
-        .rename         = posix2_common_rename,
-        .link           = posix2_common_link,
-        .create         = posix2_common_create,
-        .open           = posix2_common_open,
+        .access         = posix2_unsupported_access,
+        .readlink       = posix2_unsupported_readlink,
+        .mknod          = posix2_unsupported_mknod,
+        .mkdir          = posix2_unsupported_mkdir,
+        .unlink         = posix2_unsupported_unlink,
+        .rmdir          = posix2_unsupported_rmdir,
+        .symlink        = posix2_unsupported_symlink,
+        .rename         = posix2_unsupported_rename,
+        .link           = posix2_unsupported_link,
+        .create         = posix2_unsupported_create,
+        .open           = posix2_unsupported_open,
         .readv          = posix_readv,
         .writev         = posix_writev,
-        .flush          = posix_flush,
+        .flush          = posix2_unsupported_flush,
         .fsync          = posix_fsync,
-        .opendir        = posix2_common_opendir,
-        .readdir        = posix2_common_readdir,
-        .readdirp       = posix2_common_readdirp,
-        .fsyncdir       = posix2_common_fsyncdir,
+        .opendir        = posix2_unsupported_opendir,
+        .readdir        = posix2_unsupported_readdir,
+        .readdirp       = posix2_unsupported_readdirp,
+        .fsyncdir       = posix2_unsupported_fsyncdir,
         .statfs         = posix_statfs,
-        .setxattr       = posix2_common_setxattr,
-        .getxattr       = posix2_common_getxattr,
-        .fsetxattr      = posix2_common_fsetxattr,
-        .fgetxattr      = posix2_common_fgetxattr,
-        .removexattr    = posix2_common_removexattr,
-        .fremovexattr   = posix2_common_fremovexattr,
+        .setxattr       = posix2_unsupported_setxattr,
+        .getxattr       = posix2_unsupported_getxattr,
+        .fsetxattr      = posix2_unsupported_fsetxattr,
+        .fgetxattr      = posix2_unsupported_fgetxattr,
+        .removexattr    = posix2_unsupported_removexattr,
+        .fremovexattr   = posix2_unsupported_fremovexattr,
         .lk             = posix_lk,
         .inodelk        = posix_inodelk,
         .finodelk       = posix_finodelk,
         .entrylk        = posix_entrylk,
         .fentrylk       = posix_fentrylk,
         .rchecksum      = posix_rchecksum,
-        .xattrop        = posix2_common_xattrop,
-        .fxattrop       = posix2_common_fxattrop,
-        .setattr        = posix2_common_setattr,
-        .fsetattr       = posix2_common_fsetattr,
+        .xattrop        = posix2_unsupported_xattrop,
+        .fxattrop       = posix2_unsupported_fxattrop,
+        .setattr        = posix2_unsupported_setattr,
+        .fsetattr       = posix2_unsupported_fsetattr,
         .fallocate      = posix_glfallocate,
         .discard        = posix_discard,
         .zerofill       = posix_zerofill,
@@ -81,9 +81,9 @@ struct xlator_fops fops = {
         .seek           = posix_seek,
 #endif
         .lease          = posix_lease,
-/*        .compound       = posix2_common_compound, */
-/*        .getactivelk    = posix2_common_getactivelk,*/
-/*        .setactivelk    = posix2_common_setactivelk,*/
+/*        .compound       = posix2_unsupported_compound, */
+/*        .getactivelk    = posix2_unsupported_getactivelk,*/
+/*        .setactivelk    = posix2_unsupported_setactivelk,*/
 };
 
 struct xlator_cbks cbks = {

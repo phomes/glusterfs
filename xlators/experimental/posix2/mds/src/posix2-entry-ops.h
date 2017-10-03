@@ -13,7 +13,7 @@
 #include "xlator.h"
 
 int32_t
-posix2_lookup (call_frame_t *, xlator_t *, loc_t *, dict_t *);
+posix2_mds_lookup (call_frame_t *, xlator_t *, loc_t *, dict_t *);
 
 int32_t
 posix2_create (call_frame_t *, xlator_t *, loc_t *, int32_t,

@@ -4,9 +4,9 @@ xlator_LTLIBRARIES = posix2-ds.la
 POSIX_SRC = $(top_srcdir)/xlators/storage/posix/src
 POSIX_BLD = $(top_builddir)/xlators/storage/posix/src
 
-noinst_HEADERS = $(POSIX_BLD)/posix.h
+noinst_HEADERS = $(POSIX_BLD)/posix.h posix2-ds-fops.h
 
-posix2_ds_sources = posix2-ds-main.c
+posix2_ds_sources = posix2-ds-main.c posix2-ds-fops.c
 
 posix2_ds_la_SOURCES = $(posix2_ds_sources)
 posix2_ds_la_LDFLAGS = -module -avoid-version

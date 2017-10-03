@@ -10,7 +10,7 @@ from generator import ops, fop_subs, generate
 
 OP_FOP_TEMPLATE = """
 int32_t
-posix2_common_@NAME@ (call_frame_t *frame, xlator_t *this,
+posix2_unsupported_@NAME@ (call_frame_t *frame, xlator_t *this,
                       @LONG_ARGS@);
 """
 

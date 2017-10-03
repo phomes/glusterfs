@@ -27,8 +27,9 @@ noinst_HEADERS = $(POSIX2_PREFIX)/posix2-messages.h \
 
 libposix2common_la_SOURCES = posix2-helpers.c $(posix_sources)
 
-nodist_libposix2common_la_SOURCES = posix2-common-fops.c posix2-common-fops.h
-BUILT_SOURCES = posix2-common-fops.h
+nodist_libposix2common_la_SOURCES = posix2-unsupported-fops.c \
+                                    posix2-unsupported-fops.h
+BUILT_SOURCES = posix2-unsupported-fops.h
 
 libposix2common_la_LIBADD = $(top_builddir)/libglusterfs/src/libglusterfs.la \
         $(LIBAIO) $(ACL_LIBS)
@@ -45,15 +46,15 @@ libposix2common_la_CPPFLAGS += -I$(top_builddir)/rpc/xdr/src
 libposix2common_la_CPPFLAGS += -I$(top_srcdir)/rpc/rpc-lib/src
 libposix2common_la_CPPFLAGS += -I$(POSIX_SRC)
 
-noinst_PYTHON = posix2-common-fops-c.py posix2-common-fops-h.py
-EXTRA_DIST = posix2-common-fops-tmpl.c posix2-common-fops-tmpl.h
+noinst_PYTHON = posix2-unsupported-fops-c.py posix2-unsupported-fops-h.py
+EXTRA_DIST = posix2-unsupported-fops-tmpl.c posix2-unsupported-fops-tmpl.h
 
-posix2-common-fops.c: posix2-common-fops-c.py posix2-common-fops-tmpl.c
-	$(PYTHON) $(POSIX2_PREFIX)/posix2-common-fops-c.py \
-        $(POSIX2_PREFIX)/posix2-common-fops-tmpl.c > $@
+posix2-unsupported-fops.c: posix2-unsupported-fops-c.py posix2-unsupported-fops-tmpl.c
+	$(PYTHON) $(POSIX2_PREFIX)/posix2-unsupported-fops-c.py \
+        $(POSIX2_PREFIX)/posix2-unsupported-fops-tmpl.c > $@
 
-posix2-common-fops.h: posix2-common-fops-h.py posix2-common-fops-tmpl.h
-	$(PYTHON) $(POSIX2_PREFIX)/posix2-common-fops-h.py \
-        $(POSIX2_PREFIX)/posix2-common-fops-tmpl.h > $@
+posix2-unsupported-fops.h: posix2-unsupported-fops-h.py posix2-unsupported-fops-tmpl.h
+	$(PYTHON) $(POSIX2_PREFIX)/posix2-unsupported-fops-h.py \
+        $(POSIX2_PREFIX)/posix2-unsupported-fops-tmpl.h > $@
 
 CLEANFILES = $(nodist_libposix2common_la_SOURCES)

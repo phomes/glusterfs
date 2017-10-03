@@ -185,7 +185,10 @@ def generate_rio_server_volfile(volname, brick_list, mds_count, ds_count, orig_v
 
     #Prepare rio client-0 xlator
     rio_volfile[volname + "-client-" + str(n)] = copy.deepcopy(volfile[volname + "-posix"])
-    rio_volfile[volname + "-client-" + str(n)]["type"] = "experimental/posix2-mds"
+    if (n < ds_count):
+        rio_volfile[volname + "-client-" + str(n)]["type"] = "experimental/posix2-ds"
+    else:
+        rio_volfile[volname + "-client-" + str(n)]["type"] = "experimental/posix2-mds"
 
     #Preapre rio client (1...n) xlators
     prepare_rio_client_xlators(rio_volfile, volname, mds_count, ds_count, brick_list, n)

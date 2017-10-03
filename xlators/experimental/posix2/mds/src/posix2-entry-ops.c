@@ -179,8 +179,8 @@ posix2_nameless_lookup (call_frame_t *frame, xlator_t *this, loc_t *loc)
 }
 
 int32_t
-posix2_lookup (call_frame_t *frame,
-               xlator_t *this, loc_t *loc, dict_t *xdata)
+posix2_mds_lookup (call_frame_t *frame,
+                   xlator_t *this, loc_t *loc, dict_t *xdata)
 {
         int32_t ret = 0;
 
@@ -483,6 +483,7 @@ posix2_icreate (call_frame_t *frame,
         priv = this->private;
 
         errno = EINVAL;
+        /* TODO: Get the loc->gfid for the request, why depend on xdata here? */
         ret = dict_get_ptr (xdata, "gfid-req", &uuidreq);
         if (ret)
                 goto unwind_err;
