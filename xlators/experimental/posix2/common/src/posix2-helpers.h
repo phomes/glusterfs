@@ -19,6 +19,10 @@ int
 posix2_make_handle (uuid_t, char *, char *, size_t);
 
 int
+posix2_make_handle_with_basename (xlator_t *, uuid_t, const char *,
+                                  char *, size_t);
+
+int
 posix2_istat_path (xlator_t *, uuid_t , const char *,
                    struct iatt *, gf_boolean_t);
 

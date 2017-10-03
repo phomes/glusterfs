@@ -45,15 +45,27 @@
         }                                                               \
     } while (0)
 
-#define MAKE_HANDLE_PATH(var, this, gfid, base) do {                    \
-        int __len;                                                      \
-        __len = posix_handle_path (this, gfid, base, NULL, 0);          \
-        if (__len <= 0)                                                 \
-                break;                                                  \
-        var = alloca (__len);                                           \
-        __len = posix_handle_path (this, gfid, base, var, __len);       \
-        if (__len <= 0)                                                 \
-                var = NULL;                                             \
+/*
+In: this (xlator_t *), gfid (uuid_t), base (basename/NULL)
+Out: var (char *, path of the gfid, alloca'd (on stack i.e))
+
+If base is given, then a name inside a parGFID is sought, else the path to
+the inode is sought.
+
+rpath for POSIX2 on disk structure would be,
+    - [0..9|a..f][0..9|a..f]/[0..9|a..f][0..9|a..f]/GFID[/base]
+
+rpath is further allocated on the stack (alloca), which is why this is a MACRO
+*/
+#define MAKE_HANDLE_PATH(var, this, gfid, base) do {                         \
+        int ret;                                                             \
+        ret = posix2_make_handle_with_basename (this, gfid, base, NULL, 0);  \
+        if (ret <= 0)                                                        \
+                break;                                                       \
+        var = alloca (ret);                                                  \
+        ret = posix2_make_handle_with_basename (this, gfid, base, var, ret); \
+        if (ret <= 0)                                                        \
+                var = NULL;                                                  \
         } while (0)
 
 /*
@@ -66,7 +78,7 @@ Once the rpath is built, it is also checked if present, and the corresponding
 stat information passed back in iatt_p.
 
 rpath for POSIX2 on disk structure would be,
-    - .glusterfs/[0..9|a..f][0..9|a..f]/[0..9|a..f][0..9|a..f]/GFID
+    - [0..9|a..f][0..9|a..f]/[0..9|a..f][0..9|a..f]/GFID
 
 rpath is further allocated on the stack (alloca), which is why this is a MACRO
 */

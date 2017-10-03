@@ -293,7 +293,7 @@ posix2_create_namei (xlator_t *this, char *parpath,
         if (ret)
                 goto purge_entry;
 
-        ret = posix2_open_and_save (this, fd, entry, flags);
+        ret = posix2_open_and_save (this, fd, entry, flags & (~O_EXCL));
         if (ret)
                 goto purge_entry;
 

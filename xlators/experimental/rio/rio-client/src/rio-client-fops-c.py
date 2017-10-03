@@ -167,6 +167,65 @@ bailout:
 }
 """
 
+DS_FD_OPS_FOP_TEMPLATE = """
+int32_t
+rio_client_@NAME@ (call_frame_t *frame, xlator_t *this,
+                   @LONG_ARGS@)
+{
+        xlator_t *subvol;
+        struct rio_conf *conf;
+        uuid_t searchgfid;
+        int32_t op_errno;
+
+        VALIDATE_OR_GOTO (frame, bailout);
+        VALIDATE_OR_GOTO (this, error);
+        conf = this->private;
+        VALIDATE_OR_GOTO (conf, error);
+        VALIDATE_OR_GOTO (fd, error);
+        VALIDATE_OR_GOTO (fd->inode, error);
+
+        /* All fd based ops should contain fd->inode->gfid for us to
+        make progress */
+        if (!gf_uuid_is_null (fd->inode->gfid)){
+                gf_uuid_copy(searchgfid, fd->inode->gfid);
+        } else {
+                op_errno = EINVAL;
+                gf_msg (this->name, GF_LOG_ERROR, op_errno,
+                        RIO_MSG_MISSING_GFID,
+                        "Missing GFID for fd %p with  inode %p",
+                        fd, fd->inode);
+                goto error;
+        }
+
+        subvol = layout_search (conf->riocnf_dclayout, searchgfid);
+        if (!subvol) {
+                op_errno = EINVAL;
+                gf_msg (this->name, GF_LOG_ERROR, op_errno,
+                        RIO_MSG_LAYOUT_ERROR,
+                        "Unable to find subvolume for GFID %s",
+                        uuid_utoa (searchgfid));
+                goto error;
+        }
+
+#ifdef RIO_DEBUG
+        gf_msg (this->name, GF_LOG_INFO, 0, 0,
+                "Sending @UPNAME@ to subvol %s", subvol->name);
+#endif
+
+        STACK_WIND (frame, rio_client_@NAME@_cbk, subvol,
+                    subvol->fops->@NAME@,
+                    @SHORT_ARGS@);
+
+        return 0;
+error:
+        STACK_UNWIND (@NAME@, frame, -1, errno,
+                      @CBK_ERROR_ARGS@);
+        return 0;
+bailout:
+        return 0;
+}
+"""
+
 FD_OPS_FOP_TEMPLATE = """
 int32_t
 rio_client_@NAME@ (call_frame_t *frame, xlator_t *this,
@@ -245,20 +304,20 @@ fd_ops = ['readv', 'writev', 'flush', 'fsync', 'fsyncdir', 'ftruncate',
 unsupported_ops = ['mknod', 'unlink', 'rmdir', 'symlink', 'rename',
                    'link',
                    'statfs', 'ipc', 'compound', 'icreate', 'namelink',
-                   'readlink', 'truncate', 'opendir', 'inodelk', 'entrylk',
-                   'xattrop', 'lease', 'getactivelk', 'setactivelk',
-                   'discover',
-                   'readv', 'writev', 'fsync', 'fsyncdir',
-                   'ftruncate', 'lk', 'readdir', 'finodelk', 'fentrylk',
-                   'fxattrop', 'rchecksum', 'readdirp', 'fallocate', 'discard',
-                   'zerofill', 'seek']
-mdsonly_inode_ops = ['stat', 'open', 'setxattr', 'getxattr', 'removexattr',
-                     'access', 'setattr']
-mdsonly_fd_ops = ['flush', 'fstat', 'fsetxattr', 'fgetxattr', 'fsetattr',
+                   'readlink', 'opendir', 'discover',
+                   'fsync', 'readdir', 'readdirp']
+mdsonly_inode_ops = ['stat', 'truncate', 'open', 'setxattr', 'getxattr',
+                     'removexattr', 'access', 'inodelk', 'entrylk', 'xattrop',
+                     'setattr', 'lease', 'getactivelk', 'setactivelk']
+mdsonly_fd_ops = ['flush', 'fsyncdir', 'ftruncate', 'fstat', 'lk', 'finodelk',
+                  'fentrylk', 'fxattrop', 'fsetxattr', 'fgetxattr', 'fsetattr',
                   'fremovexattr']
+
 mdsonly_entry_ops = ['mkdir', 'create']
+dsonly_fd_ops = ['readv', 'writev', 'rchecksum', 'fallocate', 'discard',
+                 'zerofill', 'seek']
 dsonly_inode_ops = ['not-yet']
-dsonly_fd_ops = ['not-yet']
+both_ops = ['statfs', 'fsync']
 
 
 def gen_defaults():
@@ -274,6 +333,9 @@ def gen_defaults():
         elif name in mdsonly_entry_ops:
             print generate(COMMON_OP_CBK_TEMPLATE, name, cbk_subs)
             print generate(ENTRY_OPS_FOP_TEMPLATE, name, fop_subs)
+        elif name in dsonly_fd_ops:
+            print generate(COMMON_OP_CBK_TEMPLATE, name, cbk_subs)
+            print generate(DS_FD_OPS_FOP_TEMPLATE, name, fop_subs)
 
 
 for l in open(sys.argv[1], 'r').readlines():

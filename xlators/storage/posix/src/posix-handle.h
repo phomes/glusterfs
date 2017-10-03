@@ -10,7 +10,11 @@
 #ifndef _POSIX_HANDLE_H
 #define _POSIX_HANDLE_H
 
+#ifdef POSIX2
+#include "posix2-inode-handle.h"
+#else
 #include "posix-inode-handle.h"
+#endif
 
 #define HANDLE_ABSPATH_LEN(this) (POSIX_BASE_PATH_LEN(this) + \
                                   SLEN("/" GF_HIDDEN_PATH "/00/00/" \

@@ -63,6 +63,53 @@ posix2_make_handle (uuid_t gfid, char *basepath, char *handle,
 }
 
 int
+posix2_make_handle_with_basename (xlator_t *this, uuid_t gfid,
+                                  const char *basename, char *var,
+                                  size_t varlen)
+{
+        int baselen, reqlen, ret, usedlen;
+        struct posix_private *priv = NULL;
+
+        priv = this->private;
+
+        if (var == NULL) {
+                baselen = posix2_handle_length (priv->base_path_length);
+                if (basename != NULL)
+                        reqlen = baselen + strlen (basename) + 1; /* '/' */
+                else
+                        reqlen = baselen;
+
+                /* Just looking for size, return now */
+                return reqlen;
+        }
+
+        ret = posix2_make_handle (gfid, priv->base_path, var, varlen);
+        if (ret == 0 && (basename != NULL)) {
+                usedlen = strlen (var);
+                ret = snprintf ((var + usedlen),
+                                (varlen - usedlen),
+                                "/%s", basename);
+                if (ret >= (varlen - usedlen))
+                        ret = -1;
+                else
+                        ret = 0;
+        }
+
+        if (ret != 0) {
+                gf_msg (this->name, GF_LOG_ERROR, 0,
+                        P_MSG_INODE_HANDLE_CREATE,
+                        "Unable to make handle for inode %s and basename %s",
+                        uuid_utoa (gfid),
+                        ((basename != NULL) ? basename : "NULL"));
+                errno = EOVERFLOW;
+        } else {
+                ret = strlen (var);
+        }
+
+        return ret;
+}
+
+int
 posix2_istat_path (xlator_t *this, uuid_t gfid, const char *ipath,
                    struct iatt *buf_p, gf_boolean_t dircheck)
 {

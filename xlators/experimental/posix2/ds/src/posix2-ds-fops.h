@@ -11,6 +11,7 @@
 #define _POSIX2_DS_FOPS_H
 
 #include "xlator.h"
-int32_t posix2_ds_lookup (call_frame_t *, xlator_t *, loc_t *, dict_t *);
+int32_t
+posix2_ds_lookup (call_frame_t *, xlator_t *, loc_t *, dict_t *);
 
 #endif /* _POSIX2_DS_FOPS_H */
