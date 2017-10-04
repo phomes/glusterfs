@@ -24,3 +24,6 @@ AM_CPPFLAGS += -I$(top_srcdir)/rpc/xdr/src
 AM_CPPFLAGS += -I$(top_builddir)/rpc/xdr/src
 
 CLEANFILES =
+
+uninstall-local:
+	rm -f $(DESTDIR)$(xlatordir)/posix2-ds.so

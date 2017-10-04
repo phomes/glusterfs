@@ -129,7 +129,8 @@ rio_common_init (xlator_t *this)
         /* TODO/BUG: subvolume order in the graph should be local first and
         then remotes next (i.e in the brick volfiles). This is because graph up
         events fail otherwise. Possibly a bug elsewhere, but needs this
-        workaround at present. */
+        workaround at present. Further, this strategy helps with reusing
+        the default routines for FOPs that wind calls to the FIRST_CHILD */
 
         GF_OPTION_INIT("rio-data-subvolumes",
                        conf->riocnf_data_subvolumes, str, err);

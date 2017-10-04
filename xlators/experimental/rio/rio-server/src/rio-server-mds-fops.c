@@ -8,7 +8,7 @@
   cases as published by the Free Software Foundation.
 */
 
-/* File: rio-server-fops.c
+/* File: rio-server-mds-fops.c
  * This file contains the RIO MDC/server FOP entry and exit points.
  */
 
@@ -16,8 +16,7 @@
 
 #include "rio-common.h"
 #include "rio-common-helpers.h"
-#include "defaults.h"
-#include "rio-server-fops.h"
+#include "rio-server-mds-fops.h"
 #include "layout.h"
 
 /* LOOKUP Callback

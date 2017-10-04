@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2016 Red Hat, Inc. <http://www.redhat.com>
+  Copyright (c) 2017 Red Hat, Inc. <http://www.redhat.com>
   This file is part of GlusterFS.
 
   This file is licensed to you under your choice of the GNU Lesser
@@ -8,17 +8,16 @@
   cases as published by the Free Software Foundation.
 */
 
-/* File: rio-server-main.c
- * This file contains the xlator loading functions, FOP entry points
- * and options.
- * The entire functionality including comments is TODO.
+/* File: rio-server-common.c
+ * This file contains the common xlator functions, for both RIO DS and MDS
+ * library instances.
  */
 
 #include "xlator.h"
 
 #include "rio-common.h"
 #include "defaults.h"
-#include "rio-server-fops.h"
+#include "rio-server-common.h"
 
 int
 rio_server_notify (xlator_t *this, int32_t event, void *data, ...)
@@ -63,23 +62,3 @@ rio_server_fini (xlator_t *this)
 {
         return rio_common_fini (this);
 }
-
-class_methods_t class_methods = {
-        .init           = rio_server_init,
-        .fini           = rio_server_fini,
-        .notify         = rio_server_notify,
-};
-
-struct xlator_fops fops = {
-        .lookup         = rio_server_lookup,
-        .create         = rio_server_create,
-        .mkdir          = rio_server_mkdir
-};
-
-struct xlator_cbks cbks = {
-};
-
-/*
-struct xlator_dumpops dumpops = {
-};
-*/

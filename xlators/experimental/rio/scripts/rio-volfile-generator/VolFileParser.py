@@ -125,7 +125,10 @@ def prepare_rio_xlator (volfile, volname, mds_count, ds_count, brick_list, serve
         i += 1
 
     if server:
-        sub_dict["type"] = "experimental/rios"
+        if (n < ds_count):
+            sub_dict["type"] = "experimental/rios-ds"
+        else:
+            sub_dict["type"] = "experimental/rios-mds"
     else:
         sub_dict["type"] = "experimental/rioc"
     opt_dict["lock-migration"] = "off"

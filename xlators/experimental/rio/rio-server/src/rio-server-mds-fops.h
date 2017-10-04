@@ -8,12 +8,12 @@
   cases as published by the Free Software Foundation.
 */
 
-/* File: rio-server-fops.h
+/* File: rio-server-mds-fops.h
  * This file contains entry points for all RIO server/MDS FOPs
  */
 
-#ifndef _RIO_SERVER_FOPS_H
-#define _RIO_SERVER_FOPS_H
+#ifndef _RIO_SERVER_MDS_FOPS_H
+#define _RIO_SERVER_MDS_FOPS_H
 
 int32_t rio_server_lookup (call_frame_t *, xlator_t *, loc_t *, dict_t *);
 
@@ -23,4 +23,4 @@ int32_t rio_server_create (call_frame_t *, xlator_t *, loc_t *, int32_t, mode_t,
 int32_t rio_server_mkdir (call_frame_t *, xlator_t *, loc_t *, mode_t,
                           mode_t, dict_t *);
 
-#endif /* _RIO_SERVER_FOPS_H */
+#endif /* _RIO_SERVER_MDS_FOPS_H */
