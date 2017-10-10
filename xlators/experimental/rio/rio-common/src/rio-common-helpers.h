@@ -27,6 +27,9 @@ struct rio_local *rio_local_init (call_frame_t *, struct rio_conf *, loc_t *,
 void rio_local_wipe (struct rio_local *);
 void rio_prepare_inode_loc (loc_t *dst, inode_t *src, uuid_t,
                             gf_boolean_t auxparent);
-int rio_iatt_copy (struct iatt *to, struct iatt *from);
+void rio_iatt_merge_ds_mds (struct iatt *, struct iatt *);
+void rio_iatt_merge_mds_ds (struct iatt *, struct iatt *);
+void rio_iatt_copy (struct iatt *, struct iatt *);
+gf_boolean_t rio_is_inode_dirty (inode_t *);
 
 #endif /* _RIO_COMMON_HELPERS_H */

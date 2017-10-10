@@ -16,6 +16,8 @@
 #define _RIO_COMMON_H
 
 #include "xlator.h"
+#include "call-stub.h"
+
 #include "rio-mem-types.h"
 #include "rio-messages.h"
 
@@ -61,15 +63,25 @@ struct rio_conf {
         int riocnf_notify_count;
 };
 
+/* TODO: Structure elements are changing as we code, cleanup once it reaches
+a certain point of maturity */
 struct rio_local {
         glusterfs_fop_t      riolocal_fop; /* which FOP started the local */
+        uuid_t               riolocal_gfid; /* GFID of FOP WIND */
+        gf_boolean_t         riolocal_idirty; /* inode is/was dirty */
+        gf_boolean_t         riolocal_iattrefreshed; /* refresh attempted
+                                                        from DS? */
         loc_t                riolocal_loc;
         dict_t              *riolocal_xdata_in; /* in xdata, for future winds */
         fd_t                *riolocal_fd; /* in fd, for future winds */
 
-        inode_t             *riolocal_inode; /* out inode */
+        inode_t             *riolocal_inode; /* FOP inode */
         struct iatt          riolocal_stbuf; /* stat buf of the inode */
+        struct iatt          riolocal_postpar; /* post-parent stat buf */
         dict_t              *riolocal_xdata_out; /* for future unwinds */
+
+        call_stub_t         *riolocal_stub_cbk;
+        struct rio_conf     *riolocal_conf;
 };
 
 int32_t rio_common_init (xlator_t *);

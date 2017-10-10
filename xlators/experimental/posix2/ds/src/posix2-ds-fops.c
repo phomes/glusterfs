@@ -36,6 +36,7 @@ posix2_ds_lookup (call_frame_t *frame,
         entrylen = posix2_handle_length (priv->base_path_length);
         entry = alloca (entrylen);
 
+        /* we only deal with nameless lookup, there is no named lookup in DS */
         if (loc->inode && !gf_uuid_is_null (loc->inode->gfid))
                 gf_uuid_copy (tgtuuid, loc->inode->gfid);
         else

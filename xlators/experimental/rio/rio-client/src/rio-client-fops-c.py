@@ -50,7 +50,6 @@ rio_client_@NAME@ (call_frame_t *frame, xlator_t *this,
         xlator_t *subvol;
         struct rio_conf *conf;
         uuid_t searchuuid;
-        int32_t op_errno;
 
         VALIDATE_OR_GOTO (frame, bailout);
         VALIDATE_OR_GOTO (this, error);
@@ -65,23 +64,23 @@ rio_client_@NAME@ (call_frame_t *frame, xlator_t *this,
         } else if (!gf_uuid_is_null (loc->pargfid)) {
                 gf_uuid_copy (searchuuid, loc->pargfid);
         } else {
-                op_errno = EINVAL;
-                gf_msg (this->name, GF_LOG_ERROR, op_errno,
+                gf_msg (this->name, GF_LOG_ERROR, EINVAL,
                         RIO_MSG_MISSING_GFID,
                         "Missing parent GFID for entry operation @UPNAME@"
                         " on name %s with possible path %s",
                         (loc->name)? loc->name : "NULL",
                         (loc->path)? loc->path : "NULL");
+                errno = EINVAL;
                 goto error;
         }
 
         subvol = layout_search (conf->riocnf_mdclayout, searchuuid);
         if (!subvol) {
-                op_errno = EINVAL;
-                gf_msg (this->name, GF_LOG_ERROR, op_errno,
+                gf_msg (this->name, GF_LOG_ERROR, EINVAL,
                         RIO_MSG_LAYOUT_ERROR,
                         "Unable to find subvolume for GFID %s",
                         uuid_utoa (searchuuid));
+                errno = EINVAL;
                 goto error;
         }
 
@@ -112,7 +111,6 @@ rio_client_@NAME@ (call_frame_t *frame, xlator_t *this,
         xlator_t *subvol;
         struct rio_conf *conf;
         uuid_t searchuuid;
-        int32_t op_errno;
 
         VALIDATE_OR_GOTO (frame, bailout);
         VALIDATE_OR_GOTO (this, error);
@@ -127,23 +125,23 @@ rio_client_@NAME@ (call_frame_t *frame, xlator_t *this,
         } else if (!gf_uuid_is_null (loc->gfid)) {
                 gf_uuid_copy(searchuuid, loc->gfid);
         } else {
-                op_errno = EINVAL;
-                gf_msg (this->name, GF_LOG_ERROR, op_errno,
+                gf_msg (this->name, GF_LOG_ERROR, EINVAL,
                         RIO_MSG_MISSING_GFID,
                         "Missing GFID for operation @UPNAME@"
                         " on name %s with possible path %s",
                         (loc->name)? loc->name : "NULL",
                         (loc->path)? loc->path : "NULL");
+                errno = EINVAL;
                 goto error;
         }
 
         subvol = layout_search (conf->riocnf_mdclayout, searchuuid);
         if (!subvol) {
-                op_errno = EINVAL;
-                gf_msg (this->name, GF_LOG_ERROR, op_errno,
+                gf_msg (this->name, GF_LOG_ERROR, EINVAL,
                         RIO_MSG_LAYOUT_ERROR,
                         "Unable to find subvolume for GFID %s",
                         uuid_utoa (searchuuid));
+                errno = EINVAL;
                 goto error;
         }
 
@@ -175,7 +173,6 @@ rio_client_@NAME@ (call_frame_t *frame, xlator_t *this,
         xlator_t *subvol;
         struct rio_conf *conf;
         uuid_t searchgfid;
-        int32_t op_errno;
 
         VALIDATE_OR_GOTO (frame, bailout);
         VALIDATE_OR_GOTO (this, error);
@@ -189,21 +186,21 @@ rio_client_@NAME@ (call_frame_t *frame, xlator_t *this,
         if (!gf_uuid_is_null (fd->inode->gfid)){
                 gf_uuid_copy(searchgfid, fd->inode->gfid);
         } else {
-                op_errno = EINVAL;
-                gf_msg (this->name, GF_LOG_ERROR, op_errno,
+                gf_msg (this->name, GF_LOG_ERROR, EINVAL,
                         RIO_MSG_MISSING_GFID,
                         "Missing GFID for fd %p with  inode %p",
                         fd, fd->inode);
+                errno = EINVAL;
                 goto error;
         }
 
         subvol = layout_search (conf->riocnf_dclayout, searchgfid);
         if (!subvol) {
-                op_errno = EINVAL;
-                gf_msg (this->name, GF_LOG_ERROR, op_errno,
+                gf_msg (this->name, GF_LOG_ERROR, EINVAL,
                         RIO_MSG_LAYOUT_ERROR,
                         "Unable to find subvolume for GFID %s",
                         uuid_utoa (searchgfid));
+                errno = EINVAL;
                 goto error;
         }
 
@@ -234,7 +231,6 @@ rio_client_@NAME@ (call_frame_t *frame, xlator_t *this,
         xlator_t *subvol;
         struct rio_conf *conf;
         uuid_t searchgfid;
-        int32_t op_errno;
 
         VALIDATE_OR_GOTO (frame, bailout);
         VALIDATE_OR_GOTO (this, error);
@@ -248,21 +244,21 @@ rio_client_@NAME@ (call_frame_t *frame, xlator_t *this,
         if (!gf_uuid_is_null (fd->inode->gfid)){
                 gf_uuid_copy(searchgfid, fd->inode->gfid);
         } else {
-                op_errno = EINVAL;
-                gf_msg (this->name, GF_LOG_ERROR, op_errno,
+                gf_msg (this->name, GF_LOG_ERROR, EINVAL,
                         RIO_MSG_MISSING_GFID,
                         "Missing GFID for fd %p with  inode %p",
                         fd, fd->inode);
+                errno = EINVAL;
                 goto error;
         }
 
         subvol = layout_search (conf->riocnf_mdclayout, searchgfid);
         if (!subvol) {
-                op_errno = EINVAL;
-                gf_msg (this->name, GF_LOG_ERROR, op_errno,
+                gf_msg (this->name, GF_LOG_ERROR, EINVAL,
                         RIO_MSG_LAYOUT_ERROR,
                         "Unable to find subvolume for GFID %s",
                         uuid_utoa (searchgfid));
+                errno = EINVAL;
                 goto error;
         }
 

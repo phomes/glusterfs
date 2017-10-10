@@ -220,6 +220,9 @@ rio_local_init (call_frame_t *frame, struct rio_conf *conf, loc_t *loc,
         if (!local)
                 goto error;
 
+        if (conf)
+                local->riolocal_conf = conf;
+
         if (loc) {
                 ret = loc_copy (&local->riolocal_loc, loc);
                 if (ret)
@@ -278,7 +281,7 @@ rio_prepare_inode_loc (loc_t *dst, inode_t *inode, uuid_t gfid,
                 dst->inode = inode_ref (inode);
 
         if (auxparent) {
-                /* Set the parent to the ausx GFID */
+                /* Set the parent to the aux GFID */
                 memset (dst->pargfid, 0, sizeof (uuid_t));
                 dst->pargfid[15] = GF_AUXILLARY_PARGFID;
         }
@@ -299,43 +302,69 @@ rio_prepare_inode_loc (loc_t *dst, inode_t *inode, uuid_t gfid,
                 }                                                       \
         } while (0)                                                     \
 
-int
-rio_iatt_merge (struct iatt *to, struct iatt *from)
+void
+rio_iatt_merge_ds_mds (struct iatt *to_ds, struct iatt *from_mds)
 {
-        if (!from || !to)
-                return 0;
+        if (!from_mds || !to_ds)
+                return;
 
-        to->ia_dev      = from->ia_dev;
+        to_ds->ia_dev      = from_mds->ia_dev;
 
-        gf_uuid_copy (to->ia_gfid, from->ia_gfid);
+        gf_uuid_copy (to_ds->ia_gfid, from_mds->ia_gfid);
 
-        to->ia_ino      = from->ia_ino;
-        to->ia_prot     = from->ia_prot;
-        to->ia_type     = from->ia_type;
-        to->ia_nlink    = from->ia_nlink;
-        to->ia_rdev     = from->ia_rdev;
-        to->ia_size    += from->ia_size;
-        to->ia_blksize  = from->ia_blksize;
-        to->ia_blocks  += from->ia_blocks;
+        to_ds->ia_ino      = from_mds->ia_ino;
+        to_ds->ia_prot     = from_mds->ia_prot;
+        to_ds->ia_type     = from_mds->ia_type;
+        to_ds->ia_nlink    = from_mds->ia_nlink;
+        to_ds->ia_rdev     = from_mds->ia_rdev;
+        /*to_ds->ia_size    += from_mds->ia_size; true on DS always */
+        /*to_ds->ia_blksize  = from_mds->ia_blksize; true on DS always */
+        /*to_ds->ia_blocks  += from_mds->ia_blocks; true on DS always */
 
-        set_if_greater (to->ia_uid, from->ia_uid);
-        set_if_greater (to->ia_gid, from->ia_gid);
+        to_ds->ia_uid = from_mds->ia_uid;
+        to_ds->ia_gid = from_mds->ia_gid;
 
-        set_if_greater_time(to->ia_atime, to->ia_atime_nsec,
-                            from->ia_atime, from->ia_atime_nsec);
-        set_if_greater_time (to->ia_mtime, to->ia_mtime_nsec,
-                             from->ia_mtime, from->ia_mtime_nsec);
-        set_if_greater_time (to->ia_ctime, to->ia_ctime_nsec,
-                             from->ia_ctime, from->ia_ctime_nsec);
+        /* time is always the greater of the 2, as MDS may have witnessed some
+        operations post the last operation on the DS, and vice-versa */
+        set_if_greater_time(to_ds->ia_atime, to_ds->ia_atime_nsec,
+                            from_mds->ia_atime, from_mds->ia_atime_nsec);
+        set_if_greater_time (to_ds->ia_mtime, to_ds->ia_mtime_nsec,
+                             from_mds->ia_mtime, from_mds->ia_mtime_nsec);
+        set_if_greater_time (to_ds->ia_ctime, to_ds->ia_ctime_nsec,
+                             from_mds->ia_ctime, from_mds->ia_ctime_nsec);
 
-        return 0;
+        return;
 }
 
-int
+void
+rio_iatt_merge_mds_ds (struct iatt *to_mds, struct iatt *from_ds)
+{
+        if (!from_ds || !to_mds)
+                return;
+
+        /* See rio_iatt_merge_ds_mds for valid
+        MDS fields that are left untouched */
+        to_mds->ia_size   = from_ds->ia_size;
+        to_mds->ia_blksize  = from_ds->ia_blksize;
+        to_mds->ia_blocks  = from_ds->ia_blocks;
+
+        /* time is always the greater of the 2, as MDS may have witnessed some
+        operations post the last operation on the DS, and vice-versa */
+        set_if_greater_time(to_mds->ia_atime, to_mds->ia_atime_nsec,
+                            from_ds->ia_atime, from_ds->ia_atime_nsec);
+        set_if_greater_time (to_mds->ia_mtime, to_mds->ia_mtime_nsec,
+                             from_ds->ia_mtime, from_ds->ia_mtime_nsec);
+        set_if_greater_time (to_mds->ia_ctime, to_mds->ia_ctime_nsec,
+                             from_ds->ia_ctime, from_ds->ia_ctime_nsec);
+
+        return;
+}
+
+void
 rio_iatt_copy (struct iatt *to, struct iatt *from)
 {
         if (!from || !to)
-                return 0;
+                return;
 
         to->ia_dev      = from->ia_dev;
 
@@ -359,7 +388,7 @@ rio_iatt_copy (struct iatt *to, struct iatt *from)
         to->ia_ctime      = from->ia_ctime;
         to->ia_ctime_nsec = from->ia_ctime_nsec;
 
-        return 0;
+        return;
 }
 
 int
@@ -395,4 +424,14 @@ rio_iatt_copy_mds (struct iatt *to, struct iatt *from)
         to->ia_ctime_nsec = from->ia_ctime_nsec;
 
         return 0;
+}
+
+
+/* Dirty inode handling routines */
+gf_boolean_t
+rio_is_inode_dirty (inode_t *inode)
+{
+        /* TODO: Till we get POSIX time/size updates stashed in MDS, all inodes
+        are treated as dirty */
+        return _gf_true;
 }

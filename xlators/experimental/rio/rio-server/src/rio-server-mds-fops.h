@@ -15,12 +15,21 @@
 #ifndef _RIO_SERVER_MDS_FOPS_H
 #define _RIO_SERVER_MDS_FOPS_H
 
-int32_t rio_server_lookup (call_frame_t *, xlator_t *, loc_t *, dict_t *);
+int32_t
+rio_server_mds_lookup (call_frame_t *, xlator_t *, loc_t *, dict_t *);
 
-int32_t rio_server_create (call_frame_t *, xlator_t *, loc_t *, int32_t, mode_t,
-                           mode_t, fd_t *, dict_t *);
+int32_t
+rio_server_create (call_frame_t *, xlator_t *, loc_t *, int32_t, mode_t,
+                   mode_t, fd_t *, dict_t *);
 
-int32_t rio_server_mkdir (call_frame_t *, xlator_t *, loc_t *, mode_t,
-                          mode_t, dict_t *);
+int32_t
+rio_server_mkdir (call_frame_t *, xlator_t *, loc_t *, mode_t,
+                  mode_t, dict_t *);
+
+int32_t
+rio_server_mds_stat (call_frame_t *, xlator_t *, loc_t *, dict_t *);
+
+int32_t
+rio_server_mds_fstat (call_frame_t *, xlator_t *, fd_t *, dict_t *);
 
 #endif /* _RIO_SERVER_MDS_FOPS_H */
