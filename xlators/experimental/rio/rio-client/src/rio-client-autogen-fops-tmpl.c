@@ -23,7 +23,6 @@
 #include "logging.h"
 #include "statedump.h"
 
-#include "rio-client.h"
 #include "rio-messages.h"
 #include "rio-common.h"
 #include "layout.h"

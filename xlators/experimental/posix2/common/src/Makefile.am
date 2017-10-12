@@ -12,10 +12,7 @@ posix_sources += $(POSIX_SRC)/posix-aio.c
 posix_sources += $(POSIX_SRC)/posix-gfid-path.c
 posix_sources += $(POSIX_SRC)/posix-inode-fd-ops.c
 
-noinst_HEADERS = $(POSIX2_PREFIX)/posix2-messages.h \
-                 $(POSIX2_PREFIX)/posix2-common.h \
-                 $(POSIX2_PREFIX)/posix2-mem-types.h \
-                 $(POSIX2_PREFIX)/posix2-inode-handle.h \
+noinst_HEADERS = $(POSIX2_PREFIX)/posix2-inode-handle.h \
                  $(POSIX2_PREFIX)/posix2-helpers.h \
                  $(POSIX_BLD)/posix-mem-types.h \
                  $(POSIX_BLD)/posix-handle.h \

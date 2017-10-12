@@ -17,8 +17,7 @@ BUILT_SOURCES = rio-server-ds-autogen-fops.h
 RIOCOMMON_SRC = $(top_srcdir)/xlators/experimental/rio/rio-common/src
 RIOCOMMON_BLD = $(top_builddir)/xlators/experimental/rio/rio-common/src
 
-riocommon_sources = $(RIOCOMMON_SRC)/rio-common-map.c
-riocommon_sources += $(RIOCOMMON_SRC)/rio-common-helpers.c
+riocommon_sources = $(RIOCOMMON_SRC)/rio-common-helpers.c
 riocommon_sources += $(RIOCOMMON_SRC)/rio-common-init.c
 riocommon_sources += $(RIOCOMMON_SRC)/layout.c
 riocommon_sources += $(RIOCOMMON_SRC)/layout-static-bucket.c

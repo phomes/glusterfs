@@ -8,8 +8,7 @@ rioc_sources = rio-client-main.c
 RIOCOMMON_SRC = $(top_srcdir)/xlators/experimental/rio/rio-common/src
 RIOCOMMON_BLD = $(top_builddir)/xlators/experimental/rio/rio-common/src
 
-riocommon_sources = $(RIOCOMMON_SRC)/rio-common-map.c
-riocommon_sources += $(RIOCOMMON_SRC)/rio-common-helpers.c
+riocommon_sources = $(RIOCOMMON_SRC)/rio-common-helpers.c
 riocommon_sources += $(RIOCOMMON_SRC)/rio-common-init.c
 riocommon_sources += $(RIOCOMMON_SRC)/layout.c
 riocommon_sources += $(RIOCOMMON_SRC)/layout-static-bucket.c
@@ -23,8 +22,7 @@ noinst_HEADERS_riocommon = $(RIOCOMMON_BLD)/rio-common.h \
         $(RIOCOMMON_BLD)/layout.h
 
 noinst_HEADERS = $(top_builddir)/xlators/lib/src/libxlator.h \
-        $(noinst_HEADERS_riocommon) \
-        rio-client.h
+        $(noinst_HEADERS_riocommon)
 
 rioc_la_SOURCES = $(rioc_sources) $(riocommon_sources)
 
