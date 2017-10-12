@@ -17,7 +17,7 @@
 #include "rio-common.h"
 #include "defaults.h"
 #include "rio-server-common.h"
-#include "rio-server-ds-fops.h"
+#include "rio-server-ds-autogen-fops.h"
 
 class_methods_t class_methods = {
         .init           = rio_server_init,
@@ -26,6 +26,12 @@ class_methods_t class_methods = {
 };
 
 struct xlator_fops fops = {
+
+        .readv          = rio_server_ds_readv,
+        .writev         = rio_server_ds_writev,
+        .fallocate      = rio_server_ds_fallocate,
+        .discard        = rio_server_ds_discard,
+        .zerofill       = rio_server_ds_zerofill
 };
 
 struct xlator_cbks cbks = {

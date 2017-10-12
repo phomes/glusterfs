@@ -63,13 +63,21 @@ posix2_ds_lookup (call_frame_t *frame,
         /* TODO: the data inode is created wit 0600 permissions, IOW a non-root
         client attempting to write to the file may not suceed? */
         ret = posix2_create_inode (this, entry, 0, 0600);
-        if (ret) {
+        if (ret)
                 goto unwind_err;
-        } else {
-                ret = posix2_istat_path (this, tgtuuid, entry, &buf, _gf_false);
-                if (ret)
-                        goto unwind_err;
-        }
+
+        /* make it easy for returned iatt from common POSIX code to return
+        correct gfid in the iatt, by reading this xattr. This is not essentially
+        needed as the GFID is the way we reach here, but needed to reuse common
+        code */
+        ret = sys_lsetxattr (entry, GFID_XATTR_KEY, tgtuuid,
+                             sizeof (uuid_t), 0);
+        if (ret)
+                goto unwind_err;
+
+        ret = posix2_istat_path (this, tgtuuid, entry, &buf, _gf_false);
+        if (ret)
+                goto unwind_err;
 done:
         STACK_UNWIND_STRICT (lookup, frame, 0, 0, loc->inode, &buf, NULL,
                              &pbuf);

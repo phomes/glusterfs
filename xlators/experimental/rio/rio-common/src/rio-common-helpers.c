@@ -361,6 +361,24 @@ rio_iatt_merge_mds_ds (struct iatt *to_mds, struct iatt *from_ds)
 }
 
 void
+rio_iatt_cleanse_ds (struct iatt *in_ds)
+{
+        if (!in_ds)
+                return;
+
+        /* TODO: what are the right invalid values for these fields? */
+        in_ds->ia_dev      = 0;
+        in_ds->ia_prot     = (ia_prot_t){0, };
+        in_ds->ia_type     = IA_IFREG; /* Always regular files in DS */
+        in_ds->ia_nlink    = 0;
+        in_ds->ia_rdev     = 0;
+        in_ds->ia_uid = -1;
+        in_ds->ia_gid = -1;
+
+        return;
+}
+
+void
 rio_iatt_copy (struct iatt *to, struct iatt *from)
 {
         if (!from || !to)

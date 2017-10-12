@@ -1,13 +1,18 @@
 xlatordir = $(libdir)/glusterfs/$(PACKAGE_VERSION)/xlator/experimental
 xlator_LTLIBRARIES = rios-mds.la rios-ds.la
 
+RIOSERVER_SRC = $(top_srcdir)/xlators/experimental/rio/rio-server/src
+
 rios_mds_sources = rio-server-mds-main.c
 rios_mds_sources += rio-server-mds-fops.c
 rios_mds_sources += rio-server-common.c
 
 rios_ds_sources = rio-server-ds-main.c
-rios_ds_sources += rio-server-ds-fops.c
 rios_ds_sources += rio-server-common.c
+
+nodist_rios_ds_la_SOURCES = rio-server-ds-autogen-fops.c
+nodist_rios_ds_la_SOURCES += rio-server-ds-autogen-fops.h
+BUILT_SOURCES = rio-server-ds-autogen-fops.h
 
 RIOCOMMON_SRC = $(top_srcdir)/xlators/experimental/rio/rio-common/src
 RIOCOMMON_BLD = $(top_builddir)/xlators/experimental/rio/rio-common/src
@@ -26,8 +31,7 @@ noinst_HEADERS_riocommon = $(RIOCOMMON_BLD)/rio-common.h \
         $(RIOCOMMON_BLD)/rio-messages.h \
         $(RIOCOMMON_BLD)/layout.h \
         rio-server-common.h \
-        rio-server-mds-fops.h \
-        rio-server-ds-fops.h
+        rio-server-mds-fops.h
 
 noinst_HEADERS = $(top_builddir)/xlators/lib/src/libxlator.h \
         $(noinst_HEADERS_riocommon)
@@ -49,7 +53,18 @@ AM_CPPFLAGS += -I$(top_srcdir)/rpc/xdr/src
 AM_CPPFLAGS += -I$(top_builddir)/rpc/xdr/src
 AM_CPPFLAGS += -I$(top_srcdir)/xlators/lib/src
 
-CLEANFILES =
+noinst_PYTHON = rio-server-ds-fops-c.py rio-server-ds-fops-h.py
+EXTRA_DIST = rio-server-ds-autogen-fops-tmpl.c rio-server-ds-autogen-fops-tmpl.h
+
+rio-server-ds-autogen-fops.c: rio-server-ds-fops-c.py rio-server-ds-autogen-fops-tmpl.c
+	$(PYTHON) $(RIOSERVER_SRC)/rio-server-ds-fops-c.py \
+        $(RIOSERVER_SRC)/rio-server-ds-autogen-fops-tmpl.c > $@
+
+rio-server-ds-autogen-fops.h: rio-server-ds-fops-h.py rio-server-ds-autogen-fops-tmpl.h
+	$(PYTHON) $(RIOSERVER_SRC)/rio-server-ds-fops-h.py \
+        $(RIOSERVER_SRC)/rio-server-ds-autogen-fops-tmpl.h > $@
+
+CLEANFILES = $(nodist_rios_ds_la_SOURCES)
 
 uninstall-local:
 	rm -f $(DESTDIR)$(xlatordir)/rios-mds.so

@@ -8,7 +8,7 @@
   cases as published by the Free Software Foundation.
 */
 
-/* File: rio-server-ds-fops.c
+/* File: rio-server-ds-autogen-fops-tmpl.c
  * This file contains the RIO DC/server FOP entry and exit points.
  */
 
@@ -16,5 +16,7 @@
 
 #include "rio-common.h"
 #include "rio-common-helpers.h"
-#include "rio-server-mds-fops.h"
+/*#include "rio-server-ds-autogen-fops.h"*/
 #include "layout.h"
+
+#pragma generate

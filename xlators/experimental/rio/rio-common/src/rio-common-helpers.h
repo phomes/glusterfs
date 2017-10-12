@@ -29,6 +29,7 @@ void rio_prepare_inode_loc (loc_t *dst, inode_t *src, uuid_t,
                             gf_boolean_t auxparent);
 void rio_iatt_merge_ds_mds (struct iatt *, struct iatt *);
 void rio_iatt_merge_mds_ds (struct iatt *, struct iatt *);
+void rio_iatt_cleanse_ds (struct iatt *);
 void rio_iatt_copy (struct iatt *, struct iatt *);
 gf_boolean_t rio_is_inode_dirty (inode_t *);
 

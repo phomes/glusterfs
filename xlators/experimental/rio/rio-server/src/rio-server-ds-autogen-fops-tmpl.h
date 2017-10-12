@@ -8,12 +8,13 @@
   cases as published by the Free Software Foundation.
 */
 
-/* File: rio-server-ds-fops.h
+/* File: rio-server-ds-autogen-fops-tmpl.h
  * This file contains declarations for all RIO DS FOPs.
  */
 
-#ifndef _RIO_SERVER_DS_FOPS_H
-#define _RIO_SERVER_DS_FOPS_H
+#ifndef _RIO_SERVER_DS_AUTOGEN_FOPS_H
+#define _RIO_SERVER_DS_AUTOGEN_FOPS_H
 
+#pragma generate
 
-#endif /* _RIO_SERVER_DS_FOPS_H */
+#endif /* _RIO_SERVER_DS_AUTOGEN_FOPS_H */
