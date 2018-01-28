@@ -2179,7 +2179,7 @@ int
 client_post_common_2iatt (xlator_t *this, gfx_common_2iatt_rsp *rsp, struct iatt *iatt,
                           struct iatt *iatt2, dict_t **xdata)
 {
-        if (-1 != rsp->op_ret) {
+        if (-1 != rsp->op_ret || EREMOTE == rsp->op_errno) {
                 gfx_stat_to_iattx (&rsp->prestat, iatt);
                 gfx_stat_to_iattx (&rsp->poststat, iatt2);
         }

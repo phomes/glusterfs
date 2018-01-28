@@ -148,7 +148,8 @@ server4_lookup_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
                                 forget_inode_if_no_dentry (state->loc.inode);
                         }
                 }
-                goto out;
+                if (op_errno != EREMOTE)
+                        goto out;
         }
 
         server4_post_lookup (&rsp, frame, state, inode, stbuf);

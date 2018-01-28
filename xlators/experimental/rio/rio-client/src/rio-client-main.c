@@ -37,6 +37,7 @@ int32_t rio_client_lookup_remote_cbk (call_frame_t *frame, void *cookie,
         local = frame->local;
         VALIDATE_OR_GOTO (local, error);
 
+        frame->local = NULL;
         STACK_UNWIND_STRICT (lookup, frame, op_ret, op_errno, inode, buf,
                              xdata, &local->riolocal_stbuf);
         rio_local_wipe (local);
@@ -76,6 +77,7 @@ int32_t rio_client_lookup_remote (call_frame_t *frame, xlator_t *this,
                     subvol->fops->lookup, &inode_loc, NULL);
         return 0;
  error:
+        frame->local = NULL;
         rio_local_wipe (local);
         STACK_UNWIND (lookup, frame, -1, errno, NULL, NULL, NULL, NULL);
 bailout:
@@ -124,11 +126,14 @@ int32_t rio_client_lookup_cbk (call_frame_t *frame, void *cookie,
                 return ret;
         }
 
+        frame->local = NULL;
         rio_local_wipe (local);
         STACK_UNWIND_STRICT (lookup, frame, op_ret, op_errno, inode, buf,
                              xdata, postparent);
         return 0;
 error:
+        frame->local = NULL;
+        rio_local_wipe (local);
         STACK_UNWIND (lookup, frame, -1, errno, NULL, NULL, NULL, NULL);
 bailout:
         return 0;
@@ -230,6 +235,8 @@ int32_t rio_client_lookup (call_frame_t *frame, xlator_t *this, loc_t *loc,
                     loc, xdata);
         return 0;
 error:
+        frame->local = NULL;
+        rio_local_wipe (local);
         STACK_UNWIND (lookup, frame, -1, errno, NULL, NULL, NULL, NULL);
 bailout:
         return 0;

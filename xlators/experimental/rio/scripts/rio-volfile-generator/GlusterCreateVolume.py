@@ -63,8 +63,9 @@ def gluster_create_volume():
     os.chdir("/var/lib/glusterd/vols/" + args.vol_name)
     for i in os.listdir("."):
         if i.startswith(args.vol_name) and i.endswith(".vol") \
-                and i.find("rebalance") == -1 and i.find("tcp") == -1:
-           vol_files.append(i)
+                and i.find("rebalance") == -1 and i.find("tcp") == -1 \
+                and i.find("gfproxyd") == -1:
+            vol_files.append(i)
 
         if i.endswith(".vol") and i.find("tcp-fuse") != -1:
             client_volfiles.append(i)

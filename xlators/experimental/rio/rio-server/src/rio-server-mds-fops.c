@@ -212,11 +212,13 @@ rio_server_mds_lookup_cbk (call_frame_t *frame, void *cookie,
         /* TODO: layout unlocks */
 
 done:
+        frame->local = NULL;
         rio_local_wipe (local);
         STACK_UNWIND_STRICT (lookup, frame, op_ret, op_errno, inode, buf,
                              xdata, postparent);
         return 0;
 error:
+        frame->local = NULL;
         rio_local_wipe (local);
         STACK_UNWIND (lookup, frame, -1, errno, NULL, NULL, NULL, NULL);
 bailout:
@@ -334,6 +336,7 @@ rio_server_mds_stat_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
         /* TODO: layout unlocks */
 
 done:
+        frame->local = NULL;
         if (local->riolocal_fop == GF_FOP_STAT)
                 STACK_UNWIND_STRICT (stat, frame, op_ret, op_errno,
                                      buf, xdata);
@@ -343,6 +346,7 @@ done:
         rio_local_wipe (local);
         return 0;
 error:
+        frame->local = NULL;
         if (local->riolocal_fop == GF_FOP_STAT)
                 STACK_UNWIND (stat, frame, -1, errno, NULL, NULL);
         else
@@ -481,6 +485,7 @@ rio_server_setattr_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
         /* TODO: layout unlocks */
 
 done:
+        frame->local = NULL;
         if (local->riolocal_fop == GF_FOP_SETATTR)
                 STACK_UNWIND_STRICT (setattr, frame, op_ret, op_errno,
                                      preop_stbuf, postop_stbuf, xdata);
@@ -490,6 +495,7 @@ done:
         rio_local_wipe (local);
         return 0;
 error:
+        frame->local = NULL;
         if (local->riolocal_fop == GF_FOP_SETATTR)
                 STACK_UNWIND (setattr, frame, -1, errno, NULL, NULL, NULL);
         else
@@ -619,13 +625,15 @@ rio_server_mds_truncate_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
         /* TODO: layout unlocks */
 
 done:
+        frame->local = NULL;
+        rio_local_wipe (local);
         STACK_UNWIND_STRICT (truncate, frame, op_ret, op_errno, prebuf, postbuf,
                              xdata);
-        rio_local_wipe (local);
         return 0;
 error:
-        STACK_UNWIND (truncate, frame, -1, errno, NULL, NULL, NULL);
+        frame->local = NULL;
         rio_local_wipe (local);
+        STACK_UNWIND (truncate, frame, -1, errno, NULL, NULL, NULL);
 bailout:
         return 0;
 }
@@ -791,6 +799,7 @@ rio_server_mkdir_namelink_cbk (call_frame_t *frame, void *cookie,
         /* TODO: Orphan inode and journal */
         /* TODO: xdata should be merged from icreate and namelink and sent
         back? */
+        frame->local = NULL;
         STACK_UNWIND (mkdir, frame, op_ret, op_errno, local->riolocal_inode,
                       &local->riolocal_stbuf, prebuf, postbuf, xdata);
         rio_local_wipe (local);
@@ -821,6 +830,7 @@ rio_server_mkdir_namelink (call_frame_t *frame, xlator_t *this,
                     local->riolocal_xdata_in);
         return 0;
  error:
+        frame->local = NULL;
         rio_local_wipe (local);
         STACK_UNWIND (mkdir, frame, -1, errno, NULL, NULL, NULL, NULL, NULL);
         return -1;
@@ -876,6 +886,7 @@ rio_server_icreate_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
         /* TODO: When icreate is added, add an unwind condition for the same */
         return ret;
 error:
+        frame->local = NULL;
         rio_local_wipe (local);
         if (infop == GF_FOP_MKDIR) {
                 STACK_UNWIND (mkdir, frame, -1, errno, NULL, NULL, NULL, NULL,
@@ -973,6 +984,7 @@ rio_server_mkdir (call_frame_t *frame, xlator_t *this,
         loc_wipe (&inode_loc);
         return 0;
 error:
+        frame->local = NULL;
         rio_local_wipe (local);
         loc_wipe (&inode_loc);
         STACK_UNWIND (mkdir, frame, -1, errno, NULL, NULL, NULL, NULL, NULL);
