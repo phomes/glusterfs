@@ -891,6 +891,9 @@ out:
                                 loc_gfid_utoa (&local->loc),
                                 (local->name) ? local->name : "(null)");
                 }
+        } else {
+                /* Mainly to handle the failures in syncop_getxattr */
+                rsp.op_ret = 0;
         }
 
         CLIENT_STACK_UNWIND (getxattr, frame, rsp.op_ret, op_errno, dict, xdata);
