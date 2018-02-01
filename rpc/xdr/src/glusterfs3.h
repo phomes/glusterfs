@@ -668,6 +668,9 @@ dict_to_xdr (dict_t *this, gfx_dict *dict)
                 goto out;
         }
 
+        /* need to handle this in locked region */
+        LOCK (&this->lock);
+
         dict->pairs.pairs_val = GF_CALLOC (1, (this->count *
                                                sizeof (gfx_dict_pair)),
                                            gf_common_mt_char);
@@ -756,6 +759,9 @@ dict_to_xdr (dict_t *this, gfx_dict *dict)
 
         ret = 0;
 out:
+        if (this)
+                UNLOCK (&this->lock);
+
         return ret;
 }
 
