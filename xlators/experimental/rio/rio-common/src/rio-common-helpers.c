@@ -220,6 +220,7 @@ rio_local_init (call_frame_t *frame, struct rio_conf *conf, loc_t *loc,
         if (!local)
                 goto error;
 
+        LOCK_INIT (&local->riolocal_lock);
         if (conf)
                 local->riolocal_conf = conf;
 
@@ -265,6 +266,8 @@ rio_local_wipe (struct rio_local *local)
 
         if (local->riolocal_xdata_out)
                 dict_unref (local->riolocal_xdata_out);
+
+        LOCK_DESTROY(&local->riolocal_lock);
 
         GF_FREE (local);
 }

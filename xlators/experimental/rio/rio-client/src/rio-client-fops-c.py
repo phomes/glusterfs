@@ -301,7 +301,7 @@ unsupported_ops = ['mknod', 'unlink', 'rmdir', 'symlink', 'rename',
                    'link',
                    'statfs', 'ipc', 'compound', 'icreate', 'namelink',
                    'readlink', 'opendir', 'discover',
-                   'fsync', 'readdir', 'readdirp']
+                   'readdir', 'readdirp']
 mdsonly_inode_ops = ['stat', 'truncate', 'open', 'setxattr', 'getxattr',
                      'removexattr', 'access', 'inodelk', 'entrylk', 'xattrop',
                      'setattr', 'lease', 'getactivelk', 'setactivelk']

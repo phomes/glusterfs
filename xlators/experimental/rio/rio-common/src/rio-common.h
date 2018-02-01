@@ -66,6 +66,9 @@ struct rio_conf {
 /* TODO: Structure elements are changing as we code, cleanup once it reaches
 a certain point of maturity */
 struct rio_local {
+        /* Lock to protect concurrent access */
+        gf_lock_t            riolocal_lock;
+
         glusterfs_fop_t      riolocal_fop; /* which FOP started the local */
         uuid_t               riolocal_gfid; /* GFID of FOP WIND */
         gf_boolean_t         riolocal_idirty; /* inode is/was dirty */
@@ -76,12 +79,16 @@ struct rio_local {
         fd_t                *riolocal_fd; /* in fd, for future winds */
 
         inode_t             *riolocal_inode; /* FOP inode */
-        struct iatt          riolocal_stbuf; /* stat buf of the inode */
-        struct iatt          riolocal_postpar; /* post-parent stat buf */
+        struct iatt          riolocal_stbuf1; /* stat buf copy 1 */
+        struct iatt          riolocal_stbuf2; /* stat buf copy 2 */
         dict_t              *riolocal_xdata_out; /* for future unwinds */
 
         call_stub_t         *riolocal_stub_cbk;
         struct rio_conf     *riolocal_conf;
+
+        /* state management, things like #winds done using this local
+           to other such needs go here */
+        int                  riolocal_winds;
 };
 
 int32_t rio_common_init (xlator_t *);

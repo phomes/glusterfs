@@ -801,7 +801,7 @@ rio_server_mkdir_namelink_cbk (call_frame_t *frame, void *cookie,
         back? */
         frame->local = NULL;
         STACK_UNWIND (mkdir, frame, op_ret, op_errno, local->riolocal_inode,
-                      &local->riolocal_stbuf, prebuf, postbuf, xdata);
+                      &local->riolocal_stbuf1, prebuf, postbuf, xdata);
         rio_local_wipe (local);
         return 0;
 bailout:
@@ -875,7 +875,7 @@ rio_server_icreate_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
 
         /* Stash the inode and stat information to return when namelink
         completes */
-        rio_iatt_copy (&local->riolocal_stbuf, buf);
+        rio_iatt_copy (&local->riolocal_stbuf1, buf);
         local->riolocal_inode = inode_ref (inode);
         if (xdata)
                 local->riolocal_xdata_out = dict_ref (xdata);
@@ -990,4 +990,54 @@ error:
         STACK_UNWIND (mkdir, frame, -1, errno, NULL, NULL, NULL, NULL, NULL);
 bailout:
         return -1;
+}
+
+static int32_t
+rio_server_mds_fsync_cbk (call_frame_t *frame, void *cookie,
+                          xlator_t *this, int32_t op_ret,
+                          int32_t op_errno, struct iatt *prebuf,
+                          struct iatt *postbuf, dict_t *xdata)
+{
+        VALIDATE_OR_GOTO (frame, bailout);
+
+        if (op_ret != 0) {
+                goto done;
+        }
+
+        rio_iatt_cleanse_ds (prebuf);
+        rio_iatt_cleanse_ds (postbuf);
+done:
+        STACK_UNWIND (fsync, frame, op_ret, op_errno,
+                      prebuf, postbuf, xdata);
+bailout:
+        return 0;
+}
+
+/* Specialized as we need to cleanse iatt on the return path.
+   This FOP is special, as otherwise we would handle dirty here as well, but
+   fsync is sent by the client to both the DC and/or the MDC, and hence has the
+   advantage of chaining the iatt information at the client.
+*/
+int32_t
+rio_server_mds_fsync (call_frame_t *frame, xlator_t *this, fd_t *fd,
+                      int32_t datasync, dict_t *xdata)
+{
+        xlator_t *subvol;
+        struct rio_conf *conf;
+
+        VALIDATE_OR_GOTO (frame, bailout);
+        VALIDATE_OR_GOTO (this, error);
+        conf = this->private;
+        VALIDATE_OR_GOTO (conf, error);
+
+        subvol = conf->riocnf_server_local_xlator;
+
+        STACK_WIND (frame, rio_server_mds_fsync_cbk, subvol,
+                    subvol->fops->fsync,
+                    fd, datasync, xdata);
+        return 0;
+error:
+        STACK_UNWIND (fsync, frame, -1, errno, NULL, NULL, NULL);
+bailout:
+        return 0;
 }

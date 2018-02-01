@@ -4996,7 +4996,7 @@ posix icreate operation (i.e it does not need the parent).
 
 Function does a simple check on passed in UUID being equivalent to the
 special AUX PARGFID.*/
-int __is_auxilary_gfid (uuid_t u1)
+int gf_is_auxilary_gfid (uuid_t u1)
 {
         uuid_t u2;
 

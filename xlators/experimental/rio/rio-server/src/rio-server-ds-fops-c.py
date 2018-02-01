@@ -79,7 +79,7 @@ bailout:
 """
 
 post_iatt_fops = ['readv']
-pre_post_iatt_fops = ['writev', 'truncate', 'ftruncate', 'fallocate',
+pre_post_iatt_fops = ['writev', 'fsync', 'truncate', 'ftruncate', 'fallocate',
                       'discard', 'zerofill']
 
 

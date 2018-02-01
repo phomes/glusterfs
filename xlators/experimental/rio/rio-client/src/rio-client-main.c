@@ -25,6 +25,152 @@
 #include "rio-client-autogen-fops.h"
 #include "layout.h"
 
+int32_t
+rio_client_fsync_cbk (call_frame_t *frame, void *cookie, xlator_t *this,
+                      int32_t op_ret, int32_t op_errno,
+                      struct iatt *prebuf, struct iatt *postbuf,
+                      dict_t *xdata)
+{
+        struct rio_local *local;
+        long mdc = 0;
+        bool unwind;
+
+        VALIDATE_OR_GOTO (frame, bailout);
+        local = frame->local;
+        VALIDATE_OR_GOTO (local, bailout);
+
+        mdc = (long)cookie;
+
+        LOCK (&local->riolocal_lock);
+        {
+                unwind = !(--local->riolocal_winds);
+                if (!mdc) {
+                        rio_iatt_merge_ds_mds (&local->riolocal_stbuf1,
+                                               prebuf);
+                        rio_iatt_merge_ds_mds (&local->riolocal_stbuf2,
+                                               postbuf);
+                } else {
+                        rio_iatt_merge_mds_ds (&local->riolocal_stbuf1,
+                                               prebuf);
+                        rio_iatt_merge_mds_ds (&local->riolocal_stbuf2,
+                                               postbuf);
+                }
+        }
+        UNLOCK (&local->riolocal_lock);
+
+        /* TODO: Handle ESTALELAYOUT (at which point start stashing loc, xdata
+        and other relevant in args from the FOP call) */
+        if (unwind) {
+                frame->local = NULL;
+                STACK_UNWIND (fsync, frame, op_ret, op_errno,
+                              &local->riolocal_stbuf1,
+                              &local->riolocal_stbuf2,
+                              xdata);
+                rio_local_wipe (local);
+        }
+bailout:
+        return 0;
+}
+
+int32_t
+rio_client_fsync (call_frame_t *frame, xlator_t *this, fd_t *fd,
+                  int32_t datasync, dict_t *xdata)
+{
+        xlator_t *subvol_mdc = NULL, *subvol_dc;
+        struct rio_conf *conf;
+        struct rio_local *local = NULL;
+        uuid_t searchgfid;
+
+        VALIDATE_OR_GOTO (frame, bailout);
+        VALIDATE_OR_GOTO (this, error);
+        conf = this->private;
+        VALIDATE_OR_GOTO (conf, error);
+        VALIDATE_OR_GOTO (fd, error);
+        VALIDATE_OR_GOTO (fd->inode, error);
+
+        /* Stash the request */
+        /* TODO: We do not need fd stashed, as we are not handling
+           ESTALELAYOUT yet! */
+        local = rio_local_init (frame, conf, NULL, NULL, NULL, GF_FOP_FSYNC);
+        if (!local) {
+                gf_msg (this->name, GF_LOG_ERROR, errno,
+                        RIO_MSG_LOCAL_ERROR,
+                        "Unable to store FOP in args for operation"
+                        " continuty, failing fsync of gfid %s",
+                        uuid_utoa (searchgfid));
+                errno = ENOMEM;
+                goto error;
+        }
+
+        /* All fd based ops should contain fd->inode->gfid for us to
+        make progress */
+        if (!gf_uuid_is_null (fd->inode->gfid)) {
+                gf_uuid_copy(searchgfid, fd->inode->gfid);
+        } else {
+                gf_msg (this->name, GF_LOG_ERROR, EINVAL,
+                        RIO_MSG_MISSING_GFID,
+                        "Missing GFID for fd %p with  inode %p",
+                        fd, fd->inode);
+                errno = EINVAL;
+                goto error;
+        }
+
+        subvol_dc = layout_search (conf->riocnf_dclayout, searchgfid);
+        if (!subvol_dc) {
+                gf_msg (this->name, GF_LOG_ERROR, EINVAL,
+                        RIO_MSG_LAYOUT_ERROR,
+                        "Unable to find subvolume for GFID %s",
+                        uuid_utoa (searchgfid));
+                errno = EINVAL;
+                goto error;
+        }
+        local->riolocal_winds = 1;
+
+        /* If only datasync is requested, then there is no need to forward the
+           request to the metadata cluster */
+        if (datasync) {
+                goto wind;
+        }
+
+        subvol_mdc = layout_search (conf->riocnf_mdclayout, searchgfid);
+        if (!subvol_mdc) {
+                gf_msg (this->name, GF_LOG_ERROR, EINVAL,
+                        RIO_MSG_LAYOUT_ERROR,
+                        "Unable to find subvolume for GFID %s",
+                        uuid_utoa (searchgfid));
+                errno = EINVAL;
+                goto error;
+        }
+        local->riolocal_winds = 2; /* one to DC and one to MDC */
+
+wind:
+#ifdef RIO_DEBUG
+        gf_msg (this->name, GF_LOG_INFO, 0, 0,
+                "Sending FSYNC to subvol mdc %s, dc %s",
+                (subvol_mdc ? subvol_mdc->name : "NULL"),
+                subvol_dc->name);
+#endif
+        STACK_WIND (frame, rio_client_fsync_cbk, subvol_dc,
+                    subvol_dc->fops->fsync, fd, datasync, xdata);
+
+        if (!datasync) {
+                /* fake a cookie of 0x0 to denote mdc wind to unwind */
+                STACK_WIND_COOKIE (frame, rio_client_fsync_cbk,
+                                   (void *)(long)0x0, subvol_mdc,
+                                   subvol_mdc->fops->fsync,
+                                   fd, datasync, xdata);
+        }
+
+        return 0;
+error:
+        frame->local = NULL;
+        rio_local_wipe (local);
+        STACK_UNWIND (fsync, frame, -1, errno, NULL, NULL, NULL);
+        return 0;
+bailout:
+        return 0;
+}
+
 int32_t rio_client_lookup_remote_cbk (call_frame_t *frame, void *cookie,
                                       xlator_t *this, int32_t op_ret,
                                       int32_t op_errno, inode_t *inode,
@@ -39,7 +185,7 @@ int32_t rio_client_lookup_remote_cbk (call_frame_t *frame, void *cookie,
 
         frame->local = NULL;
         STACK_UNWIND_STRICT (lookup, frame, op_ret, op_errno, inode, buf,
-                             xdata, &local->riolocal_stbuf);
+                             xdata, &local->riolocal_stbuf1);
         rio_local_wipe (local);
         return 0;
 error:
@@ -95,7 +241,7 @@ int32_t rio_client_lookup_cbk (call_frame_t *frame, void *cookie,
                                inode_t *inode, struct iatt *buf, dict_t *xdata,
                                struct iatt *postparent)
 {
-        struct rio_local *local;
+        struct rio_local *local = NULL;
         int32_t ret;
 
         VALIDATE_OR_GOTO (frame, bailout);
@@ -117,7 +263,7 @@ int32_t rio_client_lookup_cbk (call_frame_t *frame, void *cookie,
                         goto error;
                 }
                 local->riolocal_inode = inode_ref (inode);
-                rio_iatt_copy (&local->riolocal_stbuf, buf);
+                rio_iatt_copy (&local->riolocal_stbuf1, buf);
                 if (xdata)
                         local->riolocal_xdata_out = dict_ref (xdata);
 

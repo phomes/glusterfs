@@ -32,7 +32,8 @@ struct xlator_fops fops = {
         .fstat          = rio_server_mds_fstat,
         .setattr        = rio_server_setattr,
         .fsetattr       = rio_server_fsetattr,
-        .truncate       = rio_server_mds_truncate
+        .truncate       = rio_server_mds_truncate,
+        .fsync          = rio_server_mds_fsync
 };
 
 struct xlator_cbks cbks = {

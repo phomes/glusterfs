@@ -27,4 +27,10 @@ EXPECT 'Started' volinfo_field $V0 'Status'
 ## Mount FUSE
 TEST $GFS -s $H0 --volfile-id $V0 $M0
 
+build_tester $(dirname $0)/gfapi-fsync.c -lgfapi
+
+TEST ./$(dirname $0)/gfapi-fsync $V0 $logdir/gfapi-fsync.log
+
+cleanup_tester $(dirname $0)/gfapi-fsync
+
 cleanup;

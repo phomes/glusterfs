@@ -143,7 +143,7 @@ posix2_nameless_lookup (call_frame_t *frame, xlator_t *this, loc_t *loc)
         else
                 gf_uuid_copy (tgtuuid, loc->gfid);
 
-        if (__is_auxilary_gfid (tgtuuid))
+        if (gf_is_auxilary_gfid (tgtuuid))
                 return posix2_handle_auxlookup (frame, this, loc, tgtuuid);
 
         errno = EINVAL;

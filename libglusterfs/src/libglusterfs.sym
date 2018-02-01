@@ -480,6 +480,7 @@ fop_lease_stub
 fop_link_stub
 fop_lk_stub
 fop_log_level
+fop_lookup_cbk_stub
 fop_lookup_stub
 fop_mkdir_stub
 fop_mknod_stub
@@ -500,9 +501,11 @@ fop_rmdir_cbk_stub
 fop_rmdir_stub
 fop_seek_stub
 fop_setactivelk_stub
+fop_setattr_cbk_stub
 fop_setattr_stub
 fop_setxattr_stub
 fop_statfs_stub
+fop_stat_cbk_stub
 fop_stat_stub
 fop_symlink_stub
 fop_truncate_cbk_stub
@@ -677,6 +680,7 @@ gf_string2uint64
 gf_string2uint_base10
 gf_strip_whitespace
 gf_strncpy
+gf_is_auxilary_gfid
 gf_strTrim
 gf_strstr
 gf_thread_cleanup_xint
